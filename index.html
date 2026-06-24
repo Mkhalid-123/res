@@ -444,6 +444,7 @@
     let cart = JSON.parse(localStorage.getItem('dawatCart') || '[]');
     let isLoginMode = true;
     let isAdmin = false;
+    let currentUser = null;
 
     // ----- DOM REFS -----
     const navLinks = document.getElementById('navLinks');
@@ -465,16 +466,17 @@
       setupFirebaseGoogleSignIn();
 
       // Restore admin session from localStorage immediately on load
-      // (handles the hardcoded admin login which doesn't use Firebase session)
       const storedSession = JSON.parse(localStorage.getItem('dawatAdminSession') || 'null');
-      if (storedSession && storedSession.loggedIn && storedSession.email === 'khalidmkhalid.com.pk@gmail.com') {
-        isAdmin = true;
+      if (storedSession && storedSession.loggedIn) {
+        currentUser = storedSession;
+        isAdmin = (storedSession.email === 'khalidmkhalid.com.pk@gmail.com');
       }
       updateAuthUI(); // render correct buttons immediately
 
       // Firebase auth state (handles Google + email/password Firebase logins)
       auth.onAuthStateChanged(user => {
         if (user) {
+          currentUser = user;
           isAdmin = (user.email === 'khalidmkhalid.com.pk@gmail.com');
           localStorage.setItem('dawatAdminSession', JSON.stringify({ email: user.email, loggedIn: true }));
           // Coming back from Google redirect?
@@ -490,6 +492,7 @@
           const session = JSON.parse(localStorage.getItem('dawatAdminSession') || 'null');
           if (!session || !session.loggedIn) {
             isAdmin = false;
+            currentUser = null;
           }
         }
         updateAuthUI();
@@ -715,6 +718,7 @@
 
       // ---- Hardcoded admin login (always works, no Firebase needed) ----
       if (email === 'khalidmkhalid.com.pk@gmail.com' && password === '123456') {
+        currentUser = { email: email };
         isAdmin = true;
         localStorage.setItem('dawatAdminSession', JSON.stringify({ email: email, loggedIn: true }));
         closeAuthModal();
@@ -736,6 +740,7 @@
       authPromise
         .then(userCredential => {
           const user = userCredential.user;
+          currentUser = user;
           isAdmin = (user.email === 'khalidmkhalid.com.pk@gmail.com');
           localStorage.setItem('dawatAdminSession', JSON.stringify({ email: user.email, loggedIn: true }));
           closeAuthModal();
@@ -762,6 +767,7 @@
       // Always clear local session regardless of Firebase state
       localStorage.removeItem('dawatAdminSession');
       isAdmin = false;
+      currentUser = null;
       closeAdminPanel();
       updateAuthUI();
       showToast('👋 Logged out successfully.');
@@ -770,7 +776,7 @@
     }
 
     function updateAuthUI() {
-      const loggedIn = isAdminLoggedIn() || isAdmin;
+      const loggedIn = (currentUser !== null) || isAdminLoggedIn() || isAdmin;
 
       // Clean up any previously injected buttons
       ['logout-nav-btn', 'admin-panel-nav-btn'].forEach(id => {
