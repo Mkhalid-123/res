@@ -460,46 +460,42 @@
       setupMenuTabs();
       setupAdminTabs();
       updateCartButtonCount();
-      updateAuthUI();
       document.getElementById('contact-form').addEventListener('submit', handleContactSubmit);
-      // Setup Firebase Google sign-in
+      // Setup Firebase Google sign-in button
       setupFirebaseGoogleSignIn();
 
-      // Handle redirect result (mobile Google sign-in returns here after redirect)
-      auth.getRedirectResult().then(result => {
-        if (result && result.user) {
-          const user = result.user;
-          if (user.email === 'khalidmkhalid.com.pk@gmail.com') {
-            isAdmin = true;
-          } else {
-            isAdmin = false;
-          }
-          localStorage.setItem('dawatAdminSession', JSON.stringify({ email: user.email, loggedIn: true }));
-          updateAuthUI();
-          showToast('Google Sign-In successful!');
-          if (isAdmin) openAdminPanel();
-        }
-      }).catch(error => {
-        if (error.code !== 'auth/popup-closed-by-user') {
-          console.error('Redirect sign-in error:', error);
-        }
-      });
-
-      // Check auth state
+      // ---- Single source of truth: onAuthStateChanged ----
+      // This fires automatically after signInWithRedirect completes (on page reload)
+      // AND after signInWithPopup, AND on page load if already signed in.
       auth.onAuthStateChanged(user => {
         if (user) {
-          // Check if user is admin (using hardcoded admin email)
-          if (user.email === 'khalidmkhalid.com.pk@gmail.com') {
-            isAdmin = true;
-            localStorage.setItem('dawatAdminSession', JSON.stringify({ email: user.email, loggedIn: true }));
-          } else {
-            isAdmin = false;
+          isAdmin = (user.email === 'khalidmkhalid.com.pk@gmail.com');
+          localStorage.setItem('dawatAdminSession', JSON.stringify({ email: user.email, loggedIn: true }));
+          // If coming back from a Google redirect, close modal and greet user
+          const pendingRedirect = sessionStorage.getItem('googleRedirectPending');
+          if (pendingRedirect) {
+            sessionStorage.removeItem('googleRedirectPending');
+            closeAuthModal();
+            showToast('Google Sign-In successful! Welcome, ' + (user.displayName || user.email));
+            if (isAdmin) openAdminPanel();
           }
         } else {
           isAdmin = false;
           localStorage.removeItem('dawatAdminSession');
         }
         updateAuthUI();
+      });
+
+      // Handle any redirect errors (e.g. account disabled, network error)
+      auth.getRedirectResult().catch(error => {
+        const errorEl = document.getElementById('auth-error');
+        if (!errorEl) return;
+        const msg = getFriendlyAuthError(error.code, error.message);
+        errorEl.textContent = msg;
+        errorEl.classList.add('show');
+        // Open modal so user sees the error
+        openAuthModal();
+        sessionStorage.removeItem('googleRedirectPending');
       });
     });
 
@@ -741,12 +737,7 @@
           if (isAdmin) openAdminPanel();
         })
         .catch(error => {
-          let msg = error.message;
-          if (error.code === 'auth/user-not-found') msg = 'User not found. Please sign up first.';
-          else if (error.code === 'auth/wrong-password') msg = 'Incorrect password.';
-          else if (error.code === 'auth/email-already-in-use') msg = 'Email already in use. Please login.';
-          else if (error.code === 'auth/weak-password') msg = 'Password should be at least 6 characters.';
-          errorEl.textContent = msg;
+          errorEl.textContent = getFriendlyAuthError(error.code, error.message);
           errorEl.classList.add('show');
         });
     }
@@ -793,65 +784,92 @@
       }
     }
 
-    // ----- Firebase Google Sign-In -----
+    // ----- Friendly Firebase error messages -----
+    function getFriendlyAuthError(code, fallback) {
+      const map = {
+        'auth/popup-closed-by-user':      'Sign-in was cancelled. Please try again.',
+        'auth/popup-blocked':             'Popup was blocked by your browser. Redirecting to Google...',
+        'auth/cancelled-popup-request':   'Another sign-in is already in progress.',
+        'auth/network-request-failed':    'Network error. Please check your internet connection.',
+        'auth/user-disabled':             'This account has been disabled. Contact support.',
+        'auth/account-exists-with-different-credential': 'An account already exists with this email using a different sign-in method.',
+        'auth/unauthorized-domain':       'This domain is not authorized. Add it to Firebase Console → Authentication → Authorized Domains.',
+        'auth/operation-not-allowed':     'Google Sign-In is not enabled. Enable it in Firebase Console → Authentication → Sign-in methods.',
+        'auth/user-not-found':            'No account found. Please sign up first.',
+        'auth/wrong-password':            'Incorrect password. Please try again.',
+        'auth/email-already-in-use':      'This email is already registered. Please log in instead.',
+        'auth/weak-password':             'Password must be at least 6 characters.',
+        'auth/invalid-email':             'Please enter a valid email address.',
+        'auth/too-many-requests':         'Too many attempts. Please wait a moment and try again.',
+      };
+      return map[code] || fallback || 'An error occurred. Please try again.';
+    }
+
+    // ----- Firebase Google Sign-In (universal: works on all devices) -----
     function setupFirebaseGoogleSignIn() {
       const container = document.getElementById('google-signin-container');
       if (!container) return;
-      
-      // Check if Google provider is available
+
+      let provider;
       try {
-        const provider = new firebase.auth.GoogleAuthProvider();
-        // Render a custom Google button
-        const btn = document.createElement('button');
-        btn.className = 'btn btn-secondary';
-        btn.style.cssText = 'display:flex;align-items:center;justify-content:center;gap:10px;width:100%;background:#fff;color:#333;border:1px solid #ddd;';
-        btn.innerHTML = `
-          <svg width="20" height="20" viewBox="0 0 48 48">
-            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-            <path fill="#FBBC05" d="M10.53 28.59A14.5 14.5 0 0 1 9.5 24c0-1.59.28-3.14.76-4.59l-7.98-6.19A23.99 23.99 0 0 0 0 24c0 3.77.87 7.35 2.56 10.56l7.97-5.97z"/>
-            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 5.97C6.51 42.62 14.62 48 24 48z"/>
-          </svg>
-          Sign in with Google
-        `;
-        btn.onclick = () => {
-          const isMobile = /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent);
-          if (isMobile) {
-            // On mobile, use redirect to avoid popup-closed-by-user error
-            auth.signInWithRedirect(provider).catch(error => {
-              const errorEl = document.getElementById('auth-error');
-              errorEl.textContent = 'Google sign-in failed: ' + error.message;
-              errorEl.classList.add('show');
-            });
-          } else {
-            // On desktop, use popup for a faster experience
-            auth.signInWithPopup(provider)
-              .then(result => {
-                const user = result.user;
-                if (user.email === 'khalidmkhalid.com.pk@gmail.com') {
-                  isAdmin = true;
-                } else {
-                  isAdmin = false;
-                }
-                localStorage.setItem('dawatAdminSession', JSON.stringify({ email: user.email, loggedIn: true }));
-                closeAuthModal();
-                updateAuthUI();
-                showToast('Google Sign-In successful!');
-                if (isAdmin) openAdminPanel();
-              })
-              .catch(error => {
-                if (error.code === 'auth/popup-closed-by-user') return; // user dismissed, no action
-                const errorEl = document.getElementById('auth-error');
-                errorEl.textContent = 'Google sign-in failed: ' + error.message;
-                errorEl.classList.add('show');
-              });
-          }
-        };
-        container.appendChild(btn);
+        provider = new firebase.auth.GoogleAuthProvider();
+        provider.addScope('email');
+        provider.addScope('profile');
+        // Force Google to always show account chooser
+        provider.setCustomParameters({ prompt: 'select_account' });
       } catch (e) {
-        // Fallback: show message
-        container.innerHTML = '<p style="color:#666;font-size:14px;">Google Sign-In unavailable. Use email/password.</p>';
+        container.innerHTML = '<p style="color:#999;font-size:13px;text-align:center;">Google Sign-In unavailable. Use email/password below.</p>';
+        return;
       }
+
+      // ---- Divider ----
+      const divider = document.createElement('div');
+      divider.style.cssText = 'display:flex;align-items:center;gap:10px;margin:8px 0;';
+      divider.innerHTML = '<hr style="flex:1;border:none;border-top:1px solid #ddd;"><span style="color:#999;font-size:13px;white-space:nowrap;">or sign in with</span><hr style="flex:1;border:none;border-top:1px solid #ddd;">';
+      container.appendChild(divider);
+
+      // ---- Google Button ----
+      const btn = document.createElement('button');
+      btn.id = 'google-signin-btn';
+      btn.type = 'button';
+      btn.style.cssText = 'display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:11px 16px;background:#fff;color:#333;border:1.5px solid #ddd;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;transition:box-shadow 0.2s,border-color 0.2s;';
+      btn.innerHTML = `
+        <svg width="20" height="20" viewBox="0 0 48 48">
+          <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+          <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+          <path fill="#FBBC05" d="M10.53 28.59A14.5 14.5 0 0 1 9.5 24c0-1.59.28-3.14.76-4.59l-7.98-6.19A23.99 23.99 0 0 0 0 24c0 3.77.87 7.35 2.56 10.56l7.97-5.97z"/>
+          <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 5.97C6.51 42.62 14.62 48 24 48z"/>
+        </svg>
+        Continue with Google
+      `;
+      btn.onmouseover = () => { btn.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)'; btn.style.borderColor = '#aaa'; };
+      btn.onmouseout  = () => { btn.style.boxShadow = 'none'; btn.style.borderColor = '#ddd'; };
+
+      btn.onclick = function() {
+        const errorEl = document.getElementById('auth-error');
+        if (errorEl) { errorEl.classList.remove('show'); errorEl.textContent = ''; }
+
+        // Show loading state on button
+        btn.disabled = true;
+        btn.innerHTML = '<span style="display:inline-block;width:18px;height:18px;border:2px solid #ddd;border-top-color:#e63946;border-radius:50%;animation:spin 0.7s linear infinite;"></span>&nbsp;Connecting to Google...';
+
+        // Mark that we are doing a redirect (sessionStorage survives redirect)
+        sessionStorage.setItem('googleRedirectPending', '1');
+
+        // Use signInWithRedirect — works on ALL devices (mobile + desktop)
+        // no popup = no popup-blocked / popup-closed errors
+        auth.signInWithRedirect(provider).catch(function(error) {
+          sessionStorage.removeItem('googleRedirectPending');
+          btn.disabled = false;
+          btn.innerHTML = `<svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59A14.5 14.5 0 0 1 9.5 24c0-1.59.28-3.14.76-4.59l-7.98-6.19A23.99 23.99 0 0 0 0 24c0 3.77.87 7.35 2.56 10.56l7.97-5.97z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 5.97C6.51 42.62 14.62 48 24 48z"/></svg> Continue with Google`;
+          if (errorEl) {
+            errorEl.textContent = getFriendlyAuthError(error.code, error.message);
+            errorEl.classList.add('show');
+          }
+        });
+      };
+
+      container.appendChild(btn);
     }
 
     // ----- ADMIN PANEL -----
