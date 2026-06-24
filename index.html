@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DAWAT PIZZA HOUSE</title>
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <!-- Legacy CSS commented out for UI/UX improvements
+  <style>
+    /* ----- RESET & BASE ----- */
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior: smooth; }
+    body { font-family: Arial, sans-serif; background: #fff; color: #333; line-height:1.6; }
+    :root {
+      --primary: #e63946;
+      --secondary: #f4a261;
+      --dark: #1d3557;
+      --light: #f1faee;
+      --white: #ffffff;
+      --gray: #6c757d;
+    }
+    .container { max-width:1200px; margin:0 auto; padding:0 20px; }
+
+    /* ----- HEADER / NAV ----- */
+    .header { position:fixed; top:0; left:0; right:0; background:var(--white); box-shadow:0 2px 10px rgba(0,0,0,0.1); z-index:1000; }
+    .nav { padding:15px 0; }
+    .nav-content { display:flex; justify-content:space-between; align-items:center; flex-wrap:nowrap; }
+    .logo { display:flex; align-items:center; gap:10px; }
+    .logo-circle { width:40px; height:40px; background:var(--primary); border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:bold; font-size:20px; }
+    .logo h1 { font-size:22px; color:var(--dark); font-weight:bold; }
+    .nav-links { display:flex; list-style:none; gap:25px; }
+    .nav-links a { text-decoration:none; color:#333; font-weight:500; transition:color 0.3s; }
+    .nav-links a:hover { color:var(--primary); }
+    .nav-buttons { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+    .btn { padding:10px 22px; border:none; border-radius:8px; font-weight:600; cursor:pointer; transition:all 0.3s ease; white-space:nowrap; }
+    .btn:hover { transform:translateY(-2px); box-shadow:0 4px 10px rgba(0,0,0,0.15); }
+    .btn-primary { background:var(--primary); color:#fff; }
+    .btn-primary:hover { background:#c92a37; }
+    .btn-secondary { background:var(--secondary); color:#fff; }
+    .btn-secondary:hover { background:#e08e4d; }
+    .mobile-menu-btn { display:none; flex-direction:column; gap:5px; background:none; border:none; cursor:pointer; }
+    .mobile-menu-btn span { width:25px; height:3px; background:var(--dark); }
+
+    /* HERO */
+    .hero { position:relative; height:100vh; display:flex; align-items:center; justify-content:center; text-align:center; color:#fff; overflow:hidden; }
+    .hero-bg { position:absolute; inset:0; background:url('https://images.unsplash.com/photo-1513104890138-7c749659a591?w=1920') center/cover; }
+    .hero-bg::after { content:''; position:absolute; inset:0; background:rgba(0,0,0,0.5); }
+    .hero-content { position:relative; z-index:1; padding:20px; }
+    .hero-content h1 { font-size:48px; margin-bottom:20px; }
+    .hero-content h2 { font-size:56px; color:var(--secondary); margin-bottom:30px; }
+    .hero-content p { font-size:24px; max-width:800px; margin:0 auto 40px; }
+    .scroll-indicator { position:absolute; bottom:30px; left:50%; transform:translateX(-50%); z-index:1; animation:bounce 2s infinite; cursor:pointer; color:#fff; }
+    @keyframes bounce { 0%,100%{transform:translateX(-50%) translateY(0);} 50%{transform:translateX(-50%) translateY(10px);} }
+    @keyframes spin { to { transform:rotate(360deg); } }
+
+    /* STORY */
+    .story { padding:100px 0; background:var(--light); }
+    .section-title { font-size:36px; font-weight:bold; text-align:center; margin-bottom:50px; color:var(--dark); }
+    .story-content { max-width:900px; margin:0 auto; }
+    .story-card { background:#fff; border-radius:12px; padding:40px; box-shadow:0 4px 20px rgba(0,0,0,0.1); display:flex; flex-direction:column; gap:30px; }
+    .story-paragraph::first-letter { font-size:60px; font-weight:bold; color:var(--primary); float:left; margin-right:10px; line-height:1; }
+    .story-signature { text-align:center; }
+    .signature-img { width:150px; height:150px; margin:0 auto 15px; border-radius:50%; overflow:hidden; }
+    .signature-img img { width:100%; height:100%; object-fit:cover; }
+    .signature-text { font-size:20px; font-weight:600; color:var(--dark); font-style:italic; }
+    .story-images { display:flex; justify-content:center; gap:20px; margin-top:30px; }
+    .story-images img { width:80px; height:80px; border-radius:50%; object-fit:cover; box-shadow:0 4px 10px rgba(0,0,0,0.1); }
+
+    /* PACKAGES */
+    .packages { padding:100px 0; background:#fff; }
+    .package-slider { position:relative; max-width:900px; margin:0 auto; }
+    .slider-btn { position:absolute; top:50%; transform:translateY(-50%); width:50px; height:50px; border-radius:50%; border:none; background:#fff; box-shadow:0 4px 10px rgba(0,0,0,0.1); cursor:pointer; font-size:24px; z-index:10; transition:background 0.3s; }
+    .slider-btn:hover { background:#f0f0f0; }
+    .slider-btn.prev { left:-25px; }
+    .slider-btn.next { right:-25px; }
+    .package-card { background:linear-gradient(135deg,#fff5e6,#ffe6e6); border-radius:16px; overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,0.1); display:flex; flex-direction:column; }
+    .package-image { height:300px; }
+    .package-image img { width:100%; height:100%; object-fit:cover; }
+    .package-info { padding:40px; text-align:center; }
+    .package-info h3 { font-size:32px; color:var(--dark); margin-bottom:15px; }
+    .package-info p { font-size:18px; color:#666; margin-bottom:20px; }
+    .package-price { display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:25px; }
+    .package-price span:first-child { font-size:48px; font-weight:bold; color:var(--primary); }
+    .slider-dots { display:flex; justify-content:center; gap:10px; margin-top:30px; }
+    .dot { width:12px; height:12px; border-radius:50%; background:#ddd; cursor:pointer; transition:background 0.3s; }
+    .dot.active { background:var(--primary); }
+
+    /* MENU */
+    .menu { padding:100px 0; background:var(--light); }
+    .menu-tabs { display:flex; justify-content:center; gap:15px; flex-wrap:wrap; margin-bottom:50px; }
+    .tab-btn { padding:10px 25px; border-radius:25px; border:none; background:#fff; font-weight:600; cursor:pointer; transition:all 0.3s; }
+    .tab-btn.active, .tab-btn:hover { background:var(--primary); color:#fff; }
+    .menu-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:30px; }
+    .menu-item { background:#fff; border-radius:12px; overflow:hidden; box-shadow:0 4px 15px rgba(0,0,0,0.1); transition:box-shadow 0.3s; }
+    .menu-item:hover { box-shadow:0 8px 25px rgba(0,0,0,0.15); }
+    .menu-item-img { position:relative; height:200px; }
+    .menu-item-img img { width:100%; height:100%; object-fit:cover; }
+    .menu-tag { position:absolute; top:15px; right:15px; padding:5px 15px; border-radius:20px; font-size:12px; font-weight:bold; color:#fff; }
+    .menu-tag.new { background:#28a745; }
+    .menu-tag.hot { background:var(--primary); }
+    .menu-item-content { padding:20px; }
+    .menu-item-content h3 { font-size:18px; color:var(--dark); margin-bottom:10px; }
+    .menu-item-content p { font-size:14px; color:#666; margin-bottom:15px; }
+    .menu-item-footer { display:flex; justify-content:space-between; align-items:center; }
+    .menu-price { font-size:20px; font-weight:bold; color:var(--primary); }
+    .menu-item-footer button { padding:8px 16px; font-size:14px; }
+
+    /* BOOK TABLE */
+    .book-table { padding:100px 0; background:var(--dark); position:relative; overflow:hidden; text-align:center; color:#fff; }
+    .book-table-bg { position:absolute; inset:0; background:url('https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1920') center/cover; opacity:0.1; }
+    .book-table .container { position:relative; z-index:1; }
+    .book-table h2 { font-size:48px; margin-bottom:20px; }
+    .book-table p { font-size:20px; max-width:600px; margin:0 auto 30px; color:#ccc; }
+
+    /* CHEFS */
+    .chefs { padding:100px 0; background:#fff; }
+    .chefs-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:30px; }
+    .chef-card { background:var(--light); border-radius:12px; overflow:hidden; box-shadow:0 4px 15px rgba(0,0,0,0.1); transition:box-shadow 0.3s; }
+    .chef-card:hover { box-shadow:0 8px 25px rgba(0,0,0,0.15); }
+    .chef-img { height:250px; overflow:hidden; background:#f0f0f0; }
+    .chef-img img { width:100%; height:100%; object-fit:cover; transition:transform 0.3s; display:block; }
+    .chef-card:hover .chef-img img { transform:scale(1.1); }
+    .chef-info { padding:20px; text-align:center; }
+    .chef-info h3 { font-size:20px; color:var(--dark); margin-bottom:10px; }
+    .chef-info p { color:#666; }
+
+    /* NEWS */
+    .news { padding:100px 0; background:var(--light); }
+    .news-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:30px; }
+    .news-card { background:#fff; border-radius:12px; overflow:hidden; box-shadow:0 4px 15px rgba(0,0,0,0.1); transition:box-shadow 0.3s; }
+    .news-card:hover { box-shadow:0 8px 25px rgba(0,0,0,0.15); }
+    .news-img { height:200px; overflow:hidden; }
+    .news-img img { width:100%; height:100%; object-fit:cover; transition:transform 0.3s; }
+    .news-card:hover .news-img img { transform:scale(1.1); }
+    .news-content { padding:25px; }
+    .news-date { font-size:14px; color:#999; margin-bottom:10px; }
+    .news-content h3 { font-size:20px; color:var(--dark); margin-bottom:15px; }
+    .news-content p { color:#666; margin-bottom:15px; }
+    .news-content a { color:var(--primary); font-weight:600; text-decoration:none; }
+    .news-content a:hover { text-decoration:underline; }
+
+    /* GALLERY */
+    .gallery { padding:100px 0; background:linear-gradient(135deg,#fff5f5,#fff); }
+    .gallery-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:25px; margin-top:40px; }
+    .gallery-item { aspect-ratio:4/3; border-radius:16px; overflow:hidden; cursor:pointer; transition:all 0.4s ease; box-shadow:0 4px 15px rgba(0,0,0,0.1); position:relative; }
+    .gallery-item::before { content:''; position:absolute; inset:0; background:linear-gradient(to top,rgba(0,0,0,0.6) 0%,transparent 50%); opacity:0; transition:opacity 0.4s ease; z-index:1; }
+    .gallery-item:hover::before { opacity:1; }
+    .gallery-item:hover { transform:translateY(-8px); box-shadow:0 12px 35px rgba(0,0,0,0.2); }
+    .gallery-item img { width:100%; height:100%; object-fit:cover; transition:transform 0.4s ease; }
+    .gallery-item:hover img { transform:scale(1.1); }
+
+    /* FOOTER */
+    .footer { background:var(--dark); color:#fff; padding:60px 0 30px; }
+    .footer-content { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:40px; margin-bottom:40px; }
+    .footer-section .logo { margin-bottom:20px; }
+    .footer-section p { color:#ccc; }
+    .footer-section h4 { font-size:20px; margin-bottom:20px; }
+    .contact-form .form-group { margin-bottom:12px; }
+    .contact-form input, .contact-form textarea { width:100%; padding:10px; border:1px solid rgba(255,255,255,0.2); border-radius:8px; background:rgba(255,255,255,0.1); color:#fff; font-size:14px; }
+    .contact-form input::placeholder, .contact-form textarea::placeholder { color:rgba(255,255,255,0.6); }
+    .contact-form textarea { resize:vertical; min-height:80px; }
+    .contact-form input:focus, .contact-form textarea:focus { outline:none; border-color:var(--primary); background:rgba(255,255,255,0.15); }
+    .footer-section .logo h3 { font-size:20px; color:#fff; font-weight:bold; }
+    .footer-section.about p { line-height:1.7; margin-bottom:20px; }
+    .contact-item { display:flex; align-items:flex-start; gap:12px; margin-bottom:16px; }
+    .contact-item p { margin:0; color:#ccc; line-height:1.5; }
+    .contact-icon { width:22px; height:22px; flex-shrink:0; color:var(--primary); margin-top:2px; }
+    .contact-form .form-group label { color:#eee; font-size:14px; margin-bottom:6px; }
+    .contact-success { display:none; margin-top:12px; padding:12px 16px; background:rgba(40,167,69,0.2); color:#4cd46b; border-radius:8px; font-size:14px; align-items:center; justify-content:center; gap:8px; }
+    .contact-success svg { width:18px; height:18px; flex-shrink:0; }
+    .social-links { display:flex; gap:15px; margin-top:5px; flex-wrap:wrap; }
+    .social-link { width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; text-decoration:none; transition:all 0.3s ease; }
+    .social-link.facebook { background:#1877F2; }
+    .social-link.facebook:hover { background:#0d5bb5; transform:scale(1.1); }
+    .social-link.instagram { background:linear-gradient(45deg,#f09433,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888); }
+    .social-link.instagram:hover { background:linear-gradient(45deg,#d67a28,#c95a33 25%,#b82138 50%,#a81e56 75%,#9a1474); transform:scale(1.1); }
+    .social-link.twitter { background:#1DA1F2; }
+    .social-link.twitter:hover { background:#0d8bd9; transform:scale(1.1); }
+    .social-icon { width:22px; height:22px; }
+    .footer-bottom { border-top:1px solid rgba(255,255,255,0.1); padding-top:30px; text-align:center; }
+    .footer-bottom p { color:#ccc; }
+
+    /* MODALS */
+    .auth-modal, .cart-modal, .checkout-modal, .admin-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:2000; align-items:center; justify-content:center; padding:20px; }
+    .auth-modal.active, .cart-modal.active, .checkout-modal.active, .admin-modal.active { display:flex; }
+    .auth-content, .cart-content, .checkout-content, .admin-content { background:#fff; border-radius:16px; width:100%; max-width:500px; max-height:90vh; overflow:hidden; display:flex; flex-direction:column; }
+    .admin-content { max-width:1000px; }
+    .auth-header, .cart-header, .checkout-header, .admin-header { display:flex; justify-content:space-between; align-items:center; padding:20px; border-bottom:1px solid #eee; }
+    .admin-header { flex-wrap:wrap; gap:10px; }
+    .auth-header h2, .cart-header h2, .checkout-header h2, .admin-header h2 { font-size:24px; color:var(--dark); margin:0; }
+    .auth-body, .cart-body, .checkout-body, .admin-body { padding:20px; overflow-y:auto; flex:1; }
+    .admin-body { display:flex; gap:20px; flex-wrap:wrap; }
+    .admin-form { flex:0 0 280px; background:#f8f9fa; border-radius:12px; padding:16px; }
+    .admin-form h3 { margin-top:0; font-size:18px; }
+    .admin-list { flex:1; min-width:250px; }
+    .close-btn { background:transparent; border:none; font-size:28px; cursor:pointer; line-height:1; color:#666; }
+    .close-btn:hover { color:#333; }
+    .auth-error { background:#fee; color:#c33; padding:10px; border-radius:8px; margin-bottom:20px; display:none; }
+    .auth-error.show { display:block; }
+    .auth-form .form-group, .checkout-body .form-group { margin-bottom:15px; }
+    .auth-form .form-group label, .checkout-body .form-group label { display:block; margin-bottom:5px; font-weight:600; color:var(--dark); }
+    .auth-form .form-group input, .checkout-body .form-group input, .checkout-body .form-group textarea { width:100%; padding:12px; border:1px solid #ddd; border-radius:8px; font-size:14px; }
+    .auth-toggle { text-align:center; margin-top:20px; font-size:14px; color:#666; }
+    .auth-toggle button { background:none; border:none; color:var(--primary); font-weight:600; cursor:pointer; margin-left:5px; }
+    .auth-toggle button:hover { text-decoration:underline; }
+
+    /* Cart */
+    .cart-item { display:flex; align-items:center; gap:15px; padding:15px; background:var(--light); border-radius:8px; margin-bottom:10px; }
+    .cart-item img { width:60px; height:60px; object-fit:cover; border-radius:8px; }
+    .cart-item-info { flex:1; }
+    .cart-item-info h4 { font-size:16px; color:var(--dark); margin:0 0 5px; }
+    .cart-item-info p { font-size:14px; color:#666; margin:0; }
+    .cart-item-quantity { display:flex; align-items:center; gap:10px; }
+    .cart-item-quantity button { width:30px; height:30px; border:1px solid #ddd; background:#fff; border-radius:4px; cursor:pointer; font-size:18px; }
+    .cart-item-remove { background:none; border:none; color:var(--primary); cursor:pointer; font-size:18px; padding:5px; }
+    .cart-total { padding:15px; background:var(--light); border-radius:8px; text-align:center; margin-bottom:15px; }
+    .cart-empty { text-align:center; padding:40px 20px; color:#666; }
+
+    /* Checkout summary */
+    .checkout-summary { background:var(--light); padding:20px; border-radius:8px; margin:20px 0; }
+    .checkout-summary .checkout-item { display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #ddd; }
+    .checkout-summary .checkout-item:last-child { border-bottom:none; }
+
+    /* Admin tabs & items */
+    .admin-tabs { display:flex; gap:4px; padding:10px 20px; background:#fafafa; border-bottom:1px solid #eee; flex-wrap:wrap; }
+    .admin-tab { flex-shrink:0; display:flex; align-items:center; gap:6px; padding:8px 14px; border:none; background:transparent; font-weight:600; font-size:0.875rem; color:#666; cursor:pointer; border-radius:8px; transition:all 0.2s; }
+    .admin-tab:hover { background:#e9ecef; color:#444; }
+    .admin-tab.active { background:var(--primary); color:#fff; }
+    .admin-item { display:flex; align-items:center; gap:14px; padding:14px; background:#f8f9fa; border-radius:10px; margin-bottom:10px; flex-wrap:wrap; }
+    .admin-item img { width:70px; height:70px; object-fit:cover; border-radius:8px; }
+    .admin-item-info { flex:1; min-width:150px; }
+    .admin-item-info h4 { margin:0 0 5px; }
+    .delete-btn { padding:8px 14px; background:#fee; border:none; color:var(--primary); border-radius:8px; cursor:pointer; font-weight:600; }
+    .delete-btn:hover { background:#fcc; }
+    .form-grid { display:grid; grid-template-columns:1fr; gap:10px; margin-bottom:12px; }
+    .form-group input, .form-group select, .form-group textarea { width:100%; padding:8px 10px; border:2px solid #e9ecef; border-radius:6px; font-size:0.875rem; }
+    .admin-form .btn { width:100%; }
+
+    /* order cards */
+    .order-card { flex-direction:column; align-items:stretch; background:linear-gradient(135deg,#ffffff,#f8f9fa); border:2px solid #e9ecef; }
+    .order-header { display:flex; justify-content:space-between; align-items:center; padding-bottom:14px; border-bottom:2px solid #e9ecef; margin-bottom:14px; flex-wrap:wrap; }
+    .order-details { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px; margin-bottom:14px; }
+    .order-status { display:inline-block; padding:4px 12px; border-radius:20px; font-size:0.75rem; font-weight:700; text-transform:uppercase; }
+    .order-status.pending { background:#fff3cd; color:#856404; }
+    .order-status.completed { background:#d4edda; color:#155724; }
+    .order-items { background:#f8f9fa; padding:14px; border-radius:10px; margin-bottom:14px; }
+    .order-item { display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid #e9ecef; }
+    .order-item:last-child { border-bottom:none; }
+    .order-actions { display:flex; gap:10px; flex-wrap:wrap; }
+
+    /* responsive */
+    @media (max-width:768px) {
+      .nav-content { flex-wrap:wrap; }
+      .nav-links { display:none; width:100%; flex-direction:column; padding:20px; gap:15px; background:#fff; margin-top:15px; border-radius:8px; box-shadow:0 4px 15px rgba(0,0,0,0.05); }
+      .nav-links.active { display:flex; }
+      .nav-buttons { display:none; width:100%; flex-direction:column; padding:0 20px 20px; gap:10px; background:#fff; border-radius:0 0 8px 8px; box-shadow:0 10px 15px rgba(0,0,0,0.05); }
+      .nav-buttons.active { display:flex; }
+      .mobile-menu-btn { display:flex; }
+      .slider-btn { display:none; }
+      .admin-body { flex-direction:column; }
+      .admin-form { flex:1; width:100%; }
+    }
+    @media (max-width:480px) {
+      .hero-content h1 { font-size:28px; }
+      .hero-content h2 { font-size:32px; }
+      .hero-content p { font-size:18px; }
+      .package-price span:first-child { font-size:32px; }
+    }
+  </style>
+  -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- HEADER -->
+  <header class="header">
+    <nav class="nav">
+      <div class="container">
+        <div class="nav-content">
+          <div class="logo"><div class="logo-circle">D</div><h1>BEST PIZZA DAWAT</h1></div>
+          <ul class="nav-links" id="navLinks">
+            <li><a href="#home">Home</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#menu">Menu</a></li>
+            <li><a href="#gallery">Gallery</a></li>
+            <li><a href="#chefs">Chefs</a></li>
+            <li><a href="#contact">Contact</a></li>
+          </ul>
+          <div class="nav-buttons" id="navButtons">
+            <button class="btn btn-secondary" onclick="openCartModal()">🛒 Cart (<span id="cart-count">0</span>)</button>
+            <button class="btn btn-primary" id="admin-btn">LOGIN</button>
+          </div>
+          <button class="mobile-menu-btn" onclick="toggleMobileMenu()"><span></span><span></span><span></span></button>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <!-- HERO -->
+  <section id="home" class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-content"><h1>Welcome To</h1><h2>DAWAT PIZZA HOUSE</h2><p>Experience the finest Italian cuisine with authentic flavors and fresh ingredients</p><button class="btn btn-primary" onclick="scrollToSection('about')">READ MORE</button></div>
+    <div class="scroll-indicator" onclick="scrollToSection('about')"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg></div>
+  </section>
+
+  <!-- STORY -->
+  <section id="about" class="story"><div class="container"><h2 class="section-title">Our Story</h2><div class="story-content"><div class="story-card"><div class="story-text"><p class="story-paragraph">Many years ago, in a small kitchen in Italy, our founder discovered the perfect combination of fresh ingredients and traditional recipes. What started as a family passion has grown into DAWAT PIZZA HOUSE, where we continue to serve authentic flavors with love and dedication. Every dish tells a story of tradition, quality, and the joy of sharing good food with family and friends.</p></div><div class="story-signature"><div class="signature-img"><img src="https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=300" alt="Signature"></div><p class="signature-text">The DAWAT Family</p></div></div><div class="story-images"><img src="https://images.unsplash.com/photo-1540420773420-3366772f4999?w=100" alt="Ingredients"><img src="https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=100" alt="Tomatoes"><img src="https://images.unsplash.com/photo-1563565375-f3fdfdbefa83?w=100" alt="Peppers"></div></div></div></section>
+
+  <!-- PACKAGES -->
+  <section class="packages"><div class="container"><h2 class="section-title">Special Package</h2><div class="package-slider"><button class="slider-btn prev" onclick="prevPackage()">&#10094;</button><div class="package-card"><div class="package-image"><img id="package-img" src="" alt="Package"></div><div class="package-info"><h3 id="package-name"></h3><p id="package-description"></p><div class="package-price"><span id="package-price"></span><span>ONLY</span></div><button class="btn btn-primary" onclick="addPackageToCart()">ORDER NOW</button></div></div><button class="slider-btn next" onclick="nextPackage()">&#10095;</button></div><div class="slider-dots" id="package-dots"></div></div></section>
+
+  <!-- MENU -->
+  <section id="menu" class="menu"><div class="container"><h2 class="section-title">Today's Menu</h2><div class="menu-tabs"><button class="tab-btn active" data-tab="All">All</button><button class="tab-btn" data-tab="Pizza">Pizza</button><button class="tab-btn" data-tab="Burger">Burger</button><button class="tab-btn" data-tab="Pasta">Pasta</button><button class="tab-btn" data-tab="Salad">Salad</button><button class="tab-btn" data-tab="Dessert">Dessert</button></div><div class="menu-grid" id="menu-grid"></div></div></section>
+
+  <!-- BOOK TABLE -->
+  <section class="book-table"><div class="book-table-bg"></div><div class="container"><h2>BOOK A TABLE NOW!</h2><p>Reserve your spot for an unforgettable dining experience</p><button class="btn btn-primary" onclick="scrollToSection('contact')">BOOK NOW</button></div></section>
+
+  <!-- CHEFS -->
+  <section id="chefs" class="chefs"><div class="container"><h2 class="section-title">Our Chefs</h2><div class="chefs-grid" id="chefs-grid"></div></div></section>
+
+  <!-- NEWS -->
+  <section class="news"><div class="container"><h2 class="section-title">Latest News</h2><div class="news-grid" id="news-grid"></div></div></section>
+
+  <!-- GALLERY -->
+  <section id="gallery" class="gallery"><div class="container"><h2 class="section-title">Gallery</h2><div class="gallery-grid" id="gallery-grid"></div></div></section>
+
+  <!-- FOOTER -->
+  <footer id="contact" class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section about"><div class="logo"><div class="logo-circle">D</div><h3>BEST PIZZA DAWAT</h3></div><p>Experience the finest Italian cuisine with authentic flavors and fresh ingredients. We are dedicated to serving you the best pizza in town!</p><div class="social-links"><a href="#" class="social-link facebook"><svg class="social-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></a><a href="#" class="social-link instagram"><svg class="social-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg></a><a href="#" class="social-link twitter"><svg class="social-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/></svg></a></div></div>
+        <div class="footer-section contact-info-section"><h4>Get In Touch</h4><div class="contact-item"><svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg><p>123 Pizza Street, Food City</p></div><div class="contact-item"><svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg><p><a href="tel:+919876543210" style="color:inherit;text-decoration:none;">+91 98765 43210</a></p></div><div class="contact-item"><svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><p><a href="mailto:info@dawatpizza.com" style="color:inherit;text-decoration:none;">info@dawatpizza.com</a></p></div><div class="contact-item"><svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg><p>Mon-Sun: 11AM - 11PM</p></div></div>
+        <div class="footer-section contact-form-section"><h4>Send Us a Message</h4><form class="contact-form" id="contact-form"><div class="form-group"><label>Your Name</label><input type="text" id="contact-name" placeholder="John Doe" required></div><div class="form-group"><label>Your Email</label><input type="email" id="contact-email" placeholder="john@example.com" required></div><div class="form-group"><label>Your Message</label><textarea id="contact-message" placeholder="Tell us what you think..." rows="4" required></textarea></div><button type="submit" class="btn btn-primary" id="contact-submit"><span class="btn-text">Send Message</span></button><div id="contact-success" class="contact-success"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg>Message sent successfully!</div></form></div>
+      </div>
+      <div class="footer-bottom"><p>© 2026 DAWAT PIZZA HOUSE. All rights reserved.</p></div>
+    </div>
+  </footer>
+
+  <!-- AUTH MODAL -->
+  <div class="auth-modal" id="auth-modal">
+    <div class="auth-content">
+      <div class="auth-header"><h2 id="auth-title">Login</h2><button class="close-btn" onclick="closeAuthModal()">&times;</button></div>
+      <div class="auth-body">
+        <div id="auth-error" class="auth-error"></div>
+        <div class="auth-form">
+          <div class="form-group"><label>Email</label><input type="email" id="auth-email" placeholder="Enter your email"></div>
+          <div class="form-group"><label>Password</label><input type="password" id="auth-password" placeholder="Enter your password"></div>
+          <button class="btn btn-primary" id="auth-submit-btn" onclick="handleEmailAuth()">Login</button>
+        </div>
+        <!-- Firebase Google Sign-In Button -->
+        <div id="google-signin-container" style="display:flex;justify-content:center;margin:12px 0;"></div>
+        <p class="auth-toggle"><span id="auth-toggle-text">Don't have an account?</span><button onclick="toggleAuthMode()" id="auth-toggle-btn">Sign up</button></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- CART MODAL -->
+  <div class="cart-modal" id="cart-modal"><div class="cart-content"><div class="cart-header"><h2>Your Cart</h2><button class="close-btn" onclick="closeCartModal()">&times;</button></div><div class="cart-body"><div id="cart-items" class="cart-items"></div><div class="cart-total"><h3>Total: ₹<span id="cart-total">0</span></h3></div><button class="btn btn-primary" onclick="openCheckoutModal()">Proceed to Checkout</button></div></div></div>
+
+  <!-- CHECKOUT MODAL -->
+  <div class="checkout-modal" id="checkout-modal"><div class="checkout-content"><div class="checkout-header"><h2>Checkout</h2><button class="close-btn" onclick="closeCheckoutModal()">&times;</button></div><div class="checkout-body"><div id="checkout-form"><div class="form-group"><label>Full Name</label><input type="text" id="checkout-name" required placeholder="Enter your full name"></div><div class="form-group"><label>Phone Number</label><input type="tel" id="checkout-phone" required placeholder="Enter your phone number"></div><div class="form-group"><label>Delivery Address</label><textarea id="checkout-address" required placeholder="Enter your delivery address"></textarea></div><div class="form-group"><label>Special Instructions (optional)</label><textarea id="checkout-notes" placeholder="Any special instructions"></textarea></div><div class="checkout-summary"><h3>Order Summary</h3><div id="checkout-items"></div><h3>Total: ₹<span id="checkout-total">0</span></h3></div><button class="btn btn-primary" onclick="handleCheckout()">Place Order</button></div></div></div></div>
+
+  <!-- ADMIN MODAL -->
+  <div class="admin-modal" id="admin-modal"><div class="admin-content"><div class="admin-header"><div><h2>Admin Panel</h2><p style="margin:0;font-size:0.9rem;color:#999;">Manage your restaurant</p></div><div style="display:flex;gap:10px;align-items:center;"><button class="btn btn-secondary" onclick="handleLogout()">Logout</button><button class="close-btn" onclick="closeAdminPanel()">&times;</button></div></div><div class="admin-tabs" id="adminTabs"><button class="admin-tab active" data-tab="menu">Menu</button><button class="admin-tab" data-tab="packages">Packages</button><button class="admin-tab" data-tab="chefs">Chefs</button><button class="admin-tab" data-tab="news">News</button><button class="admin-tab" data-tab="gallery">Gallery</button><button class="admin-tab" data-tab="messages">Messages</button><button class="admin-tab" data-tab="orders">Orders</button></div><div class="admin-body"><div class="admin-form" id="admin-form"></div><div class="admin-list" id="admin-list"></div></div></div></div>
+
+  <!-- TOAST CONTAINER -->
+  <div id="toast-container" class="toast-container"></div>
+  <script>
+    // Custom Toast Notification System
+    function showToast(msg) {
+      const container = document.getElementById('toast-container');
+      if (!container) return;
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.innerHTML = `<svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg> <span>${msg}</span>`;
+      container.appendChild(toast);
+      setTimeout(() => { 
+        toast.style.animation = window.innerWidth <= 500 ? 'toastOutMobile 0.3s forwards' : 'toastOut 0.3s forwards'; 
+        setTimeout(() => toast.remove(), 300); 
+      }, 3500);
+    };
+
+    // ----- FIREBASE CONFIG -----
+    const firebaseConfig = {
+      apiKey: "AIzaSyD4XpW0D-EBA5EecCniJrwDyr_Zk37QgXg",
+      authDomain: "project2-144f2.firebaseapp.com",
+      projectId: "project2-144f2",
+      storageBucket: "project2-144f2.firebasestorage.app",
+      messagingSenderId: "1079597329153",
+      appId: "1:1079597329153:web:1254e1880a963c23b6c900"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    // ----- DATA & STORAGE -----
+    const initialData = {
+      menuItems: [
+        { id:1, name:"Margherita Pizza", category:"Pizza", price:299, description:"Classic tomato, mozzarella, and basil", image:"https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=400", tag:"Hot" },
+        { id:2, name:"Pepperoni Pizza", category:"Pizza", price:349, description:"Loaded with pepperoni and cheese", image:"https://images.unsplash.com/photo-1628840042765-356cda07504e?w=400", tag:"New" },
+        { id:3, name:"BBQ Chicken Burger", category:"Burger", price:199, description:"Grilled chicken with BBQ sauce", image:"https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400", tag:"" },
+        { id:4, name:"Classic Beef Burger", category:"Burger", price:179, description:"Juicy beef patty with fresh veggies", image:"https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400", tag:"Hot" },
+        { id:5, name:"Spaghetti Carbonara", category:"Pasta", price:249, description:"Creamy pasta with bacon", image:"https://images.unsplash.com/photo-1612874742237-6526221588e3?w=400", tag:"" },
+        { id:6, name:"Caesar Salad", category:"Salad", price:149, description:"Fresh romaine with parmesan", image:"https://images.unsplash.com/photo-1546793665-c74683f339c1?w=400", tag:"New" },
+        { id:7, name:"Chocolate Lava Cake", category:"Dessert", price:129, description:"Warm chocolate center", image:"https://images.unsplash.com/photo-1624353365286-3f8d62daad51?w=400", tag:"Hot" },
+        { id:8, name:"Tiramisu", category:"Dessert", price:149, description:"Classic Italian dessert", image:"https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?w=400", tag:"" }
+      ],
+      packages: [
+        { id:1, name:"Family Combo", price:999, description:"2 Large Pizzas + 4 Drinks + Fries", image:"https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=600" },
+        { id:2, name:"Party Pack", price:1499, description:"3 Pizzas + 6 Drinks + Garlic Bread", image:"https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=600" },
+        { id:3, name:"Kids Special", price:499, description:"1 Medium Pizza + Juice + Toy", image:"https://images.unsplash.com/photo-1628840042765-356cda07504e?w=600" }
+      ],
+      chefs: [
+        { id:1, name:"Marco Rossi", description:"Head Chef with 15 years experience", image:"https://images.unsplash.com/photo-1577219491135-ce391730fb2c?w=400" },
+        { id:2, name:"Sofia Martinez", description:"Pastry Specialist", image:"https://images.unsplash.com/photo-1583394838336-acd977736f90?w=400" },
+        { id:3, name:"Ahmed Khan", description:"Grill Master", image:"https://images.unsplash.com/photo-1600565193348-f74bd3c7ccdf?w=400" },
+        { id:4, name:"Yuki Tanaka", description:"Sushi & Asian Cuisine", image:"https://images.unsplash.com/photo-1581299894007-aaa50297cf16?w=400" }
+      ],
+      news: [
+        { id:1, title:"New Summer Menu Launch", excerpt:"Introducing our refreshing summer specials with seasonal ingredients.", image:"https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400", date:"2024-06-15" },
+        { id:2, title:"Pizza Festival Week", excerpt:"Join us for a week of pizza celebrations with special discounts.", image:"https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400", date:"2024-06-10" },
+        { id:3, title:"Award Winning Chefs", excerpt:"Our head chef Marco Rossi wins the Golden Chef Award 2024.", image:"https://images.unsplash.com/photo-1577219491135-ce391730fb2c?w=400", date:"2024-06-05" }
+      ],
+      gallery: [
+        { id:1, image:"https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400" },
+        { id:2, image:"https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400" },
+        { id:3, image:"https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=400" },
+        { id:4, image:"https://images.unsplash.com/photo-1604382355076-af4b0eb60143?w=400" },
+        { id:5, image:"https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400" },
+        { id:6, image:"https://images.unsplash.com/photo-1546793665-c74683f339c1?w=400" }
+      ],
+      orders: []
+    };
+
+    let data = JSON.parse(localStorage.getItem('dawatData'));
+    if (!data) { data = JSON.parse(JSON.stringify(initialData)); localStorage.setItem('dawatData', JSON.stringify(data)); }
+    else { for (let key in initialData) if (!data[key]) data[key] = initialData[key]; if (!Array.isArray(data.orders)) data.orders = []; localStorage.setItem('dawatData', JSON.stringify(data)); }
+
+    let currentPackageIndex = 0;
+    let currentAdminTab = 'menu';
+    let cart = JSON.parse(localStorage.getItem('dawatCart') || '[]');
+    let isLoginMode = true;
+    let isAdmin = false;
+
+    // ----- DOM REFS -----
+    const navLinks = document.getElementById('navLinks');
+    const navButtons = document.getElementById('navButtons');
+    const adminBtn = document.getElementById('admin-btn');
+
+    // ----- INIT -----
+    document.addEventListener('DOMContentLoaded', function() {
+      renderPackages();
+      renderMenu('All');
+      renderChefs();
+      renderNews();
+      renderGallery();
+      setupMenuTabs();
+      setupAdminTabs();
+      updateCartButtonCount();
+      updateAuthUI();
+      document.getElementById('contact-form').addEventListener('submit', handleContactSubmit);
+      // Setup Firebase Google sign-in
+      setupFirebaseGoogleSignIn();
+      
+      // Check auth state
+      auth.onAuthStateChanged(user => {
+        if (user) {
+          // Check if user is admin (using hardcoded admin email)
+          if (user.email === 'khalidmkhalid.com.pk@gmail.com') {
+            isAdmin = true;
+            localStorage.setItem('dawatAdminSession', JSON.stringify({ email: user.email, loggedIn: true }));
+          } else {
+            isAdmin = false;
+          }
+        } else {
+          isAdmin = false;
+          localStorage.removeItem('dawatAdminSession');
+        }
+        updateAuthUI();
+      });
+    });
+
+    // ----- NAV / MOBILE -----
+    function toggleMobileMenu() {
+      navLinks.classList.toggle('active');
+      navButtons.classList.toggle('active');
+      document.querySelector('.mobile-menu-btn').classList.toggle('active');
+    }
+    document.querySelectorAll('.nav-links a').forEach(a => a.addEventListener('click', ()=>{
+      navLinks.classList.remove('active');
+      navButtons.classList.remove('active');
+      document.querySelector('.mobile-menu-btn').classList.remove('active');
+    }));
+
+    function scrollToSection(id) {
+      document.getElementById(id)?.scrollIntoView({ behavior:'smooth' });
+      navLinks.classList.remove('active');
+      navButtons.classList.remove('active');
+      document.querySelector('.mobile-menu-btn').classList.remove('active');
+    }
+
+    // ----- PACKAGE SLIDER -----
+    function renderPackages() {
+      const pkg = data.packages[currentPackageIndex] || data.packages[0];
+      document.getElementById('package-img').src = pkg.image;
+      document.getElementById('package-name').textContent = pkg.name;
+      document.getElementById('package-description').textContent = pkg.description;
+      document.getElementById('package-price').textContent = `₹${pkg.price}`;
+      const dots = document.getElementById('package-dots');
+      dots.innerHTML = '';
+      data.packages.forEach((_, i) => {
+        const dot = document.createElement('div');
+        dot.className = `dot ${i===currentPackageIndex?'active':''}`;
+        dot.onclick = ()=>{ currentPackageIndex=i; renderPackages(); };
+        dots.appendChild(dot);
+      });
+    }
+    function nextPackage() { currentPackageIndex = (currentPackageIndex+1)%data.packages.length; renderPackages(); }
+    function prevPackage() { currentPackageIndex = (currentPackageIndex-1+data.packages.length)%data.packages.length; renderPackages(); }
+    function addPackageToCart() {
+      const pkg = data.packages[currentPackageIndex];
+      if (!pkg) return;
+      const cid = 10000+pkg.id;
+      const existing = cart.find(i=>i.id===cid);
+      if (existing) existing.quantity++;
+      else cart.push({ id:cid, name:pkg.name, price:Number(pkg.price), description:pkg.description, image:pkg.image, category:'Package', quantity:1 });
+      saveCart(); updateCartButtonCount(); showToast(`${pkg.name} added to cart!`);
+    }
+
+    // ----- MENU -----
+    function renderMenu(category) {
+      const grid = document.getElementById('menu-grid');
+      grid.innerHTML = '';
+      const items = category==='All' ? data.menuItems : data.menuItems.filter(i=>i.category===category);
+      items.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'menu-item';
+        div.innerHTML = `
+          <div class="menu-item-img"><img src="${item.image}" alt="${item.name}" onerror="this.src='https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=400'">${item.tag ? `<span class="menu-tag ${item.tag.toLowerCase()}">${item.tag}</span>` : ''}</div>
+          <div class="menu-item-content"><h3>${item.name}</h3><p>${item.description}</p><div class="menu-item-footer"><span class="menu-price">₹${item.price}</span><button class="btn btn-secondary" onclick="addToCart(${item.id})">Add to Cart</button></div></div>
+        `;
+        grid.appendChild(div);
+      });
+    }
+    function setupMenuTabs() {
+      document.querySelectorAll('.menu-tabs .tab-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          document.querySelectorAll('.menu-tabs .tab-btn').forEach(b=>b.classList.remove('active'));
+          this.classList.add('active');
+          renderMenu(this.dataset.tab);
+        });
+      });
+    }
+
+    // ----- CHEFS / NEWS / GALLERY -----
+    function renderChefs() {
+      const grid = document.getElementById('chefs-grid');
+      grid.innerHTML = '';
+      data.chefs.forEach(c => {
+        const div = document.createElement('div');
+        div.className = 'chef-card';
+        div.innerHTML = `<div class="chef-img"><img src="${c.image}" alt="${c.name}" onerror="this.src='https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=400'"></div><div class="chef-info"><h3>${c.name}</h3><p>${c.description}</p></div>`;
+        grid.appendChild(div);
+      });
+    }
+    function renderNews() {
+      const grid = document.getElementById('news-grid');
+      grid.innerHTML = '';
+      data.news.forEach(n => {
+        const div = document.createElement('div');
+        div.className = 'news-card';
+        div.innerHTML = `<div class="news-img"><img src="${n.image}" alt="${n.title}" onerror="this.src='https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400'"></div><div class="news-content"><p class="news-date">${n.date}</p><h3>${n.title}</h3><p>${n.excerpt}</p><a href="#">Read More →</a></div>`;
+        grid.appendChild(div);
+      });
+    }
+    function renderGallery() {
+      const grid = document.getElementById('gallery-grid');
+      grid.innerHTML = '';
+      data.gallery.forEach(g => {
+        const div = document.createElement('div');
+        div.className = 'gallery-item';
+        div.innerHTML = `<img src="${g.image}" alt="Gallery" onerror="this.src='https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400'">`;
+        grid.appendChild(div);
+      });
+    }
+
+    // ----- CART -----
+    function addToCart(itemId) {
+      const item = data.menuItems.find(i=>i.id===itemId);
+      if (!item) return;
+      const existing = cart.find(i=>i.id===itemId);
+      if (existing) existing.quantity++;
+      else cart.push({ ...item, quantity:1 });
+      saveCart(); updateCartButtonCount(); showToast(`${item.name} added to cart!`);
+    }
+    function saveCart() { localStorage.setItem('dawatCart', JSON.stringify(cart)); }
+    function updateCartButtonCount() {
+      const total = cart.reduce((s,i)=>s+i.quantity,0);
+      document.getElementById('cart-count').textContent = total;
+    }
+    function openCartModal() { document.getElementById('cart-modal').classList.add('active'); renderCart(); }
+    function closeCartModal() { document.getElementById('cart-modal').classList.remove('active'); }
+    function renderCart() {
+      const container = document.getElementById('cart-items');
+      const totalEl = document.getElementById('cart-total');
+      if (cart.length===0) { container.innerHTML = '<div class="cart-empty">Your cart is empty</div>'; totalEl.textContent='0'; return; }
+      container.innerHTML = cart.map(item => `
+        <div class="cart-item">
+          <img src="${item.image}" alt="${item.name}" onerror="this.src='https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=400'">
+          <div class="cart-item-info"><h4>${item.name}</h4><p>₹${item.price}</p></div>
+          <div class="cart-item-quantity"><button onclick="updateQuantity(${item.id},-1)">-</button><span>${item.quantity}</span><button onclick="updateQuantity(${item.id},1)">+</button></div>
+          <button class="cart-item-remove" onclick="removeFromCart(${item.id})">×</button>
+        </div>
+      `).join('');
+      const total = cart.reduce((s,i)=>s + Number(i.price)*i.quantity,0);
+      totalEl.textContent = total;
+    }
+    function updateQuantity(id, change) {
+      const item = cart.find(i=>i.id===id);
+      if (!item) return;
+      item.quantity += change;
+      if (item.quantity <=0) removeFromCart(id);
+      else { saveCart(); updateCartButtonCount(); renderCart(); }
+    }
+    function removeFromCart(id) { cart = cart.filter(i=>i.id!==id); saveCart(); updateCartButtonCount(); renderCart(); }
+
+    // ----- CHECKOUT -----
+    function openCheckoutModal() {
+      if (cart.length===0) { showToast('Your cart is empty!'); return; }
+      closeCartModal();
+      document.getElementById('checkout-modal').classList.add('active');
+      renderCheckoutSummary();
+    }
+    function closeCheckoutModal() { document.getElementById('checkout-modal').classList.remove('active'); }
+    function renderCheckoutSummary() {
+      const container = document.getElementById('checkout-items');
+      const totalEl = document.getElementById('checkout-total');
+      container.innerHTML = cart.map(item => `<div class="checkout-item"><span class="checkout-item-name">${item.name} x ${item.quantity}</span><span class="checkout-item-price">₹${Number(item.price)*item.quantity}</span></div>`).join('');
+      const total = cart.reduce((s,i)=>s+Number(i.price)*i.quantity,0);
+      totalEl.textContent = total;
+    }
+    function handleCheckout() {
+      const name = document.getElementById('checkout-name').value.trim();
+      const phone = document.getElementById('checkout-phone').value.trim();
+      const address = document.getElementById('checkout-address').value.trim();
+      const notes = document.getElementById('checkout-notes').value.trim();
+      if (!name || !phone || !address) { showToast('Please fill in all required fields!'); return; }
+      const total = cart.reduce((s,i)=>s+Number(i.price)*i.quantity,0);
+      data.orders.unshift({ id:Date.now(), name, phone, address, notes, items:[...cart], total, status:'Pending', date:new Date().toISOString() });
+      localStorage.setItem('dawatData', JSON.stringify(data));
+      cart = []; saveCart(); updateCartButtonCount();
+      closeCheckoutModal();
+      document.getElementById('checkout-name').value=''; document.getElementById('checkout-phone').value=''; document.getElementById('checkout-address').value=''; document.getElementById('checkout-notes').value='';
+      showToast('Order placed successfully! Check Admin Panel > Orders to view it.');
+    }
+
+    // ----- CONTACT FORM -----
+    function handleContactSubmit(e) {
+      e.preventDefault();
+      const name = document.getElementById('contact-name').value;
+      const email = document.getElementById('contact-email').value;
+      const message = document.getElementById('contact-message').value;
+      const success = document.getElementById('contact-success');
+      success.style.display = 'flex';
+      setTimeout(()=>success.style.display='none', 4000);
+      const contacts = JSON.parse(localStorage.getItem('dawatContacts') || '[]');
+      contacts.push({ id:Date.now(), name, email, message, date:new Date().toISOString() });
+      localStorage.setItem('dawatContacts', JSON.stringify(contacts));
+      document.getElementById('contact-form').reset();
+    }
+
+    // ----- AUTH (Firebase + hardcoded admin) -----
+    function openAuthModal() { document.getElementById('auth-modal').classList.add('active'); document.getElementById('auth-error').classList.remove('show'); }
+    function closeAuthModal() { document.getElementById('auth-modal').classList.remove('active'); document.getElementById('auth-email').value=''; document.getElementById('auth-password').value=''; }
+    function toggleAuthMode() {
+      isLoginMode = !isLoginMode;
+      document.getElementById('auth-title').textContent = isLoginMode ? 'Login' : 'Sign Up';
+      document.getElementById('auth-submit-btn').textContent = isLoginMode ? 'Login' : 'Sign Up';
+      document.getElementById('auth-toggle-text').textContent = isLoginMode ? "Don't have an account?" : 'Already have an account?';
+      document.getElementById('auth-toggle-btn').textContent = isLoginMode ? 'Sign up' : 'Login';
+      document.getElementById('auth-error').classList.remove('show');
+    }
+
+    function handleEmailAuth() {
+      const email = document.getElementById('auth-email').value.trim();
+      const password = document.getElementById('auth-password').value.trim();
+      const errorEl = document.getElementById('auth-error');
+      if (!email || !password) { errorEl.textContent='Please fill in both fields.'; errorEl.classList.add('show'); return; }
+      
+      // Special hardcoded admin check (works without Firebase)
+      if (email === 'khalidmkhalid.com.pk@gmail.com' && password === '123456') {
+        isAdmin = true;
+        localStorage.setItem('dawatAdminSession', JSON.stringify({ email, loggedIn: true }));
+        closeAuthModal();
+        updateAuthUI();
+        showToast('Logged in as admin.');
+        openAdminPanel();
+        return;
+      }
+
+      // Firebase authentication
+      const authPromise = isLoginMode ? 
+        auth.signInWithEmailAndPassword(email, password) :
+        auth.createUserWithEmailAndPassword(email, password);
+      
+      authPromise
+        .then(userCredential => {
+          const user = userCredential.user;
+          if (user.email === 'khalidmkhalid.com.pk@gmail.com') {
+            isAdmin = true;
+          } else {
+            isAdmin = false;
+          }
+          localStorage.setItem('dawatAdminSession', JSON.stringify({ email: user.email, loggedIn: true }));
+          closeAuthModal();
+          updateAuthUI();
+          showToast(isLoginMode ? 'Logged in successfully!' : 'Account created!');
+          if (isAdmin) openAdminPanel();
+        })
+        .catch(error => {
+          let msg = error.message;
+          if (error.code === 'auth/user-not-found') msg = 'User not found. Please sign up first.';
+          else if (error.code === 'auth/wrong-password') msg = 'Incorrect password.';
+          else if (error.code === 'auth/email-already-in-use') msg = 'Email already in use. Please login.';
+          else if (error.code === 'auth/weak-password') msg = 'Password should be at least 6 characters.';
+          errorEl.textContent = msg;
+          errorEl.classList.add('show');
+        });
+    }
+
+    function isAdminLoggedIn() {
+      const session = JSON.parse(localStorage.getItem('dawatAdminSession') || 'null');
+      return session && session.loggedIn && session.email === 'khalidmkhalid.com.pk@gmail.com';
+    }
+
+    function handleLogout() {
+      auth.signOut().then(() => {
+        localStorage.removeItem('dawatAdminSession');
+        isAdmin = false;
+        updateAuthUI();
+        closeAdminPanel();
+        showToast('Logged out.');
+      }).catch(() => {
+        localStorage.removeItem('dawatAdminSession');
+        isAdmin = false;
+        updateAuthUI();
+        closeAdminPanel();
+        showToast('Logged out.');
+      });
+    }
+
+    function updateAuthUI() {
+      const loggedIn = isAdminLoggedIn() || isAdmin;
+      if (loggedIn) {
+        adminBtn.textContent = 'ADMIN PANEL';
+        adminBtn.onclick = openAdminPanel;
+        if (!document.getElementById('logout-nav-btn')) {
+          const btn = document.createElement('button');
+          btn.id = 'logout-nav-btn';
+          btn.className = 'btn btn-secondary';
+          btn.textContent = 'LOGOUT';
+          btn.onclick = handleLogout;
+          document.querySelector('.nav-buttons').appendChild(btn);
+        }
+      } else {
+        adminBtn.textContent = 'LOGIN';
+        adminBtn.onclick = openAuthModal;
+        const logoutBtn = document.getElementById('logout-nav-btn');
+        if (logoutBtn) logoutBtn.remove();
+      }
+    }
+
+    // ----- Firebase Google Sign-In -----
+    function setupFirebaseGoogleSignIn() {
+      const container = document.getElementById('google-signin-container');
+      if (!container) return;
+      
+      // Check if Google provider is available
+      try {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        // Render a custom Google button
+        const btn = document.createElement('button');
+        btn.className = 'btn btn-secondary';
+        btn.style.cssText = 'display:flex;align-items:center;justify-content:center;gap:10px;width:100%;background:#fff;color:#333;border:1px solid #ddd;';
+        btn.innerHTML = `
+          <svg width="20" height="20" viewBox="0 0 48 48">
+            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+            <path fill="#FBBC05" d="M10.53 28.59A14.5 14.5 0 0 1 9.5 24c0-1.59.28-3.14.76-4.59l-7.98-6.19A23.99 23.99 0 0 0 0 24c0 3.77.87 7.35 2.56 10.56l7.97-5.97z"/>
+            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 5.97C6.51 42.62 14.62 48 24 48z"/>
+          </svg>
+          Sign in with Google
+        `;
+        btn.onclick = () => {
+          auth.signInWithPopup(provider)
+            .then(result => {
+              const user = result.user;
+              if (user.email === 'khalidmkhalid.com.pk@gmail.com') {
+                isAdmin = true;
+              } else {
+                isAdmin = false;
+              }
+              localStorage.setItem('dawatAdminSession', JSON.stringify({ email: user.email, loggedIn: true }));
+              closeAuthModal();
+              updateAuthUI();
+              showToast('Google Sign-In successful!');
+              if (isAdmin) openAdminPanel();
+            })
+            .catch(error => {
+              const errorEl = document.getElementById('auth-error');
+              errorEl.textContent = 'Google sign-in failed: ' + error.message;
+              errorEl.classList.add('show');
+            });
+        };
+        container.appendChild(btn);
+      } catch (e) {
+        // Fallback: show message
+        container.innerHTML = '<p style="color:#666;font-size:14px;">Google Sign-In unavailable. Use email/password.</p>';
+      }
+    }
+
+    // ----- ADMIN PANEL -----
+    function openAdminPanel() {
+      if (!isAdminLoggedIn() && !isAdmin) { openAuthModal(); return; }
+      document.getElementById('admin-modal').classList.add('active');
+      refreshData();
+      renderAdminList();
+    }
+    function closeAdminPanel() { document.getElementById('admin-modal').classList.remove('active'); }
+    function refreshData() {
+      const stored = JSON.parse(localStorage.getItem('dawatData'));
+      if (stored) { for (let k in stored) data[k] = stored[k]; }
+    }
+    function setupAdminTabs() {
+      document.querySelectorAll('.admin-tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+          document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active'));
+          this.classList.add('active');
+          currentAdminTab = this.dataset.tab;
+          renderAdminList();
+        });
+      });
+    }
+    function renderAdminList() {
+      const list = document.getElementById('admin-list');
+      const form = document.getElementById('admin-form');
+      list.innerHTML = '';
+      if (currentAdminTab === 'messages') {
+        const msgs = JSON.parse(localStorage.getItem('dawatContacts') || '[]');
+        list.innerHTML = `<h3 style="margin-top:0;">Messages (${msgs.length})</h3>${msgs.length===0?'<p style="color:#666;">No messages.</p>':msgs.map(m=>`<div class="admin-item"><div><h4>${m.name}</h4><p>${m.email}</p><p style="font-size:13px;color:#666;">${m.message}</p><p style="font-size:12px;color:#999;">${new Date(m.date).toLocaleString()}</p></div><button class="delete-btn" onclick="deleteMessage(${m.id})">Delete</button></div>`).join('')}`;
+        form.innerHTML = '';
+        form.style.display = 'none';
+        return;
+      }
+      if (currentAdminTab === 'orders') {
+        const orders = data.orders || [];
+        list.innerHTML = `<h3 style="margin-top:0;">Orders (${orders.length})</h3>${orders.length===0?'<p style="color:#666;">No orders.</p>':orders.map(o=>`
+          <div class="admin-item order-card">
+            <div class="order-header"><h4>Order #${o.id}</h4><p>${new Date(o.date).toLocaleString()}</p></div>
+            <div class="order-details"><div><strong>Customer</strong><span>${o.name} (${o.phone})</span></div><div><strong>Address</strong><span>${o.address}</span></div>${o.notes?`<div><strong>Notes</strong><span>${o.notes}</span></div>`:''}<div><strong>Status</strong><span class="order-status ${o.status.toLowerCase()}">${o.status}</span></div></div>
+            <div class="order-items"><div class="order-items-title">Items (Total: ₹${o.total})</div>${o.items.map(item=>`<div class="order-item"><span>${item.name} x ${item.quantity}</span><span>₹${Number(item.price)*item.quantity}</span></div>`).join('')}</div>
+            <div class="order-actions"><button class="btn btn-secondary" onclick="updateOrderStatus(${o.id},'${o.status==='Completed'?'Pending':'Completed'}')">${o.status==='Completed'?'Mark Pending':'Mark Completed'}</button><button class="delete-btn" onclick="deleteAdminItem(${o.id})">Delete</button></div>
+          </div>
+        `).join('')}`;
+        form.innerHTML = '';
+        form.style.display = 'none';
+        return;
+      }
+      form.style.display = '';
+      const items = data[currentAdminTab] || [];
+      const label = currentAdminTab.charAt(0).toUpperCase()+currentAdminTab.slice(1);
+      list.innerHTML = `<h3 style="margin-top:0;">${label} (${items.length})</h3>${items.length===0?'<p style="color:#666;">No items.</p>':items.map(item=>`
+        <div class="admin-item">
+          ${item.image?`<img src="${item.image}" alt="" onerror="this.src='https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=400'">`:''}
+          <div class="admin-item-info"><h4>${item.name||item.title||'Item'}</h4><p>${item.description||item.excerpt||(item.price?`₹${item.price}`:'')}</p></div>
+          <button class="delete-btn" onclick="deleteAdminItem(${item.id})">Delete</button>
+        </div>
+      `).join('')}`;
+      // render form
+      const formConfigs = {
+        menu: ['name','category','price','description','image','tag'],
+        packages: ['name','price','description','image'],
+        chefs: ['name','description','image'],
+        news: ['title','excerpt','date','image'],
+        gallery: ['image']
+      };
+      const fields = formConfigs[currentAdminTab] || [];
+      const fieldTypes = { price:'number', category:'select', tag:'select', date:'date', image:'text', description:'textarea', excerpt:'textarea', name:'text', title:'text' };
+      const selectOptions = { category:['Pizza','Burger','Pasta','Salad','Dessert'], tag:['','New','Hot'] };
+      form.innerHTML = `<h3 style="margin-top:0;">Add New ${currentAdminTab.slice(0,-1)}</h3><div class="form-grid">${fields.map(f=>`
+        <div class="form-group">
+          <label>${f.charAt(0).toUpperCase()+f.slice(1)}</label>
+          ${fieldTypes[f]==='textarea'?`<textarea id="form-${f}" placeholder="${f}"></textarea>`:
+            fieldTypes[f]==='select'?`<select id="form-${f}">${(selectOptions[f]||[]).map(opt=>`<option value="${opt}">${opt||'None'}</option>`).join('')}</select>`:
+            `<input type="${fieldTypes[f]||'text'}" id="form-${f}" placeholder="${f}">`}
+        </div>
+      `).join('')}</div><button class="btn btn-primary" onclick="addAdminItem()">Add Item</button>`;
+    }
+
+    function addAdminItem() {
+      const fields = { menu:['name','category','price','description','image','tag'], packages:['name','price','description','image'], chefs:['name','description','image'], news:['title','excerpt','date','image'], gallery:['image'] };
+      const newItem = { id:Date.now() };
+      (fields[currentAdminTab]||[]).forEach(f => {
+        const el = document.getElementById(`form-${f}`);
+        if (el) newItem[f] = el.type==='number' ? Number(el.value) : el.value;
+      });
+      data[currentAdminTab].push(newItem);
+      localStorage.setItem('dawatData', JSON.stringify(data));
+      renderAdminList();
+      if (currentAdminTab==='menu') renderMenu('All');
+      else if (currentAdminTab==='packages') renderPackages();
+      else if (currentAdminTab==='chefs') renderChefs();
+      else if (currentAdminTab==='news') renderNews();
+      else if (currentAdminTab==='gallery') renderGallery();
+      showToast('Item added.');
+    }
+
+    function showConfirm(msg, onConfirm) {
+      const overlay = document.createElement('div');
+      overlay.className = 'confirm-overlay';
+      overlay.innerHTML = `<div class="confirm-box"><p>${msg}</p><div class="confirm-actions"><button class="btn btn-secondary cancel-btn">Cancel</button><button class="btn btn-primary confirm-btn">Delete</button></div></div>`;
+      document.body.appendChild(overlay);
+      overlay.querySelector('.cancel-btn').onclick = () => overlay.remove();
+      overlay.querySelector('.confirm-btn').onclick = () => { overlay.remove(); onConfirm(); };
+    }
+
+    function deleteAdminItem(id) {
+      showConfirm('Are you sure you want to delete this item?', () => {
+        if (currentAdminTab==='orders') data.orders = data.orders.filter(o=>o.id!==id);
+        else data[currentAdminTab] = data[currentAdminTab].filter(i=>i.id!==id);
+        localStorage.setItem('dawatData', JSON.stringify(data));
+        renderAdminList();
+        if (currentAdminTab==='menu') renderMenu('All');
+        else if (currentAdminTab==='packages') renderPackages();
+        else if (currentAdminTab==='chefs') renderChefs();
+        else if (currentAdminTab==='news') renderNews();
+        else if (currentAdminTab==='gallery') renderGallery();
+        showToast('Item deleted successfully.');
+      });
+    }
+
+    function updateOrderStatus(id, status) {
+      data.orders = data.orders.map(o => o.id===id ? {...o, status} : o);
+      localStorage.setItem('dawatData', JSON.stringify(data));
+      renderAdminList();
+    }
+
+    function deleteMessage(id) {
+      showConfirm('Are you sure you want to delete this message?', () => {
+        let msgs = JSON.parse(localStorage.getItem('dawatContacts') || '[]');
+        msgs = msgs.filter(m=>m.id!==id);
+        localStorage.setItem('dawatContacts', JSON.stringify(msgs));
+        renderAdminList();
+        showToast('Message deleted successfully.');
+      });
+    }
+  </script>
+</body>
+</html>
