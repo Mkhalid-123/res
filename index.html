@@ -464,14 +464,20 @@
       // Setup Firebase Google sign-in button
       setupFirebaseGoogleSignIn();
 
-      // ---- Single source of truth: onAuthStateChanged ----
-      // This fires automatically after signInWithRedirect completes (on page reload)
-      // AND after signInWithPopup, AND on page load if already signed in.
+      // Restore admin session from localStorage immediately on load
+      // (handles the hardcoded admin login which doesn't use Firebase session)
+      const storedSession = JSON.parse(localStorage.getItem('dawatAdminSession') || 'null');
+      if (storedSession && storedSession.loggedIn && storedSession.email === 'khalidmkhalid.com.pk@gmail.com') {
+        isAdmin = true;
+      }
+      updateAuthUI(); // render correct buttons immediately
+
+      // Firebase auth state (handles Google + email/password Firebase logins)
       auth.onAuthStateChanged(user => {
         if (user) {
           isAdmin = (user.email === 'khalidmkhalid.com.pk@gmail.com');
           localStorage.setItem('dawatAdminSession', JSON.stringify({ email: user.email, loggedIn: true }));
-          // If coming back from a Google redirect, close modal and greet user
+          // Coming back from Google redirect?
           const pendingRedirect = sessionStorage.getItem('googleRedirectPending');
           if (pendingRedirect) {
             sessionStorage.removeItem('googleRedirectPending');
@@ -480,20 +486,21 @@
             if (isAdmin) openAdminPanel();
           }
         } else {
-          isAdmin = false;
-          localStorage.removeItem('dawatAdminSession');
+          // Only clear admin if there is no hardcoded session active
+          const session = JSON.parse(localStorage.getItem('dawatAdminSession') || 'null');
+          if (!session || !session.loggedIn) {
+            isAdmin = false;
+          }
         }
         updateAuthUI();
       });
 
-      // Handle any redirect errors (e.g. account disabled, network error)
+      // Handle google redirect errors
       auth.getRedirectResult().catch(error => {
         const errorEl = document.getElementById('auth-error');
         if (!errorEl) return;
-        const msg = getFriendlyAuthError(error.code, error.message);
-        errorEl.textContent = msg;
+        errorEl.textContent = getFriendlyAuthError(error.code, error.message);
         errorEl.classList.add('show');
-        // Open modal so user sees the error
         openAuthModal();
         sessionStorage.removeItem('googleRedirectPending');
       });
@@ -705,40 +712,44 @@
       const password = document.getElementById('auth-password').value.trim();
       const errorEl = document.getElementById('auth-error');
       if (!email || !password) { errorEl.textContent='Please fill in both fields.'; errorEl.classList.add('show'); return; }
-      
-      // Special hardcoded admin check (works without Firebase)
+
+      // ---- Hardcoded admin login (always works, no Firebase needed) ----
       if (email === 'khalidmkhalid.com.pk@gmail.com' && password === '123456') {
         isAdmin = true;
-        localStorage.setItem('dawatAdminSession', JSON.stringify({ email, loggedIn: true }));
+        localStorage.setItem('dawatAdminSession', JSON.stringify({ email: email, loggedIn: true }));
         closeAuthModal();
         updateAuthUI();
-        showToast('Logged in as admin.');
+        showToast('✅ Welcome Admin! Logged in successfully.');
         openAdminPanel();
         return;
       }
 
-      // Firebase authentication
-      const authPromise = isLoginMode ? 
-        auth.signInWithEmailAndPassword(email, password) :
-        auth.createUserWithEmailAndPassword(email, password);
-      
+      // ---- Firebase login for regular users ----
+      const submitBtn = document.getElementById('auth-submit-btn');
+      submitBtn.disabled = true;
+      submitBtn.textContent = isLoginMode ? 'Logging in...' : 'Creating account...';
+
+      const authPromise = isLoginMode
+        ? auth.signInWithEmailAndPassword(email, password)
+        : auth.createUserWithEmailAndPassword(email, password);
+
       authPromise
         .then(userCredential => {
           const user = userCredential.user;
-          if (user.email === 'khalidmkhalid.com.pk@gmail.com') {
-            isAdmin = true;
-          } else {
-            isAdmin = false;
-          }
+          isAdmin = (user.email === 'khalidmkhalid.com.pk@gmail.com');
           localStorage.setItem('dawatAdminSession', JSON.stringify({ email: user.email, loggedIn: true }));
           closeAuthModal();
           updateAuthUI();
-          showToast(isLoginMode ? 'Logged in successfully!' : 'Account created!');
+          showToast(isLoginMode ? '✅ Logged in successfully!' : '✅ Account created! Welcome!');
           if (isAdmin) openAdminPanel();
         })
         .catch(error => {
           errorEl.textContent = getFriendlyAuthError(error.code, error.message);
           errorEl.classList.add('show');
+        })
+        .finally(() => {
+          submitBtn.disabled = false;
+          submitBtn.textContent = isLoginMode ? 'Login' : 'Sign Up';
         });
     }
 
@@ -748,39 +759,46 @@
     }
 
     function handleLogout() {
-      auth.signOut().then(() => {
-        localStorage.removeItem('dawatAdminSession');
-        isAdmin = false;
-        updateAuthUI();
-        closeAdminPanel();
-        showToast('Logged out.');
-      }).catch(() => {
-        localStorage.removeItem('dawatAdminSession');
-        isAdmin = false;
-        updateAuthUI();
-        closeAdminPanel();
-        showToast('Logged out.');
-      });
+      // Always clear local session regardless of Firebase state
+      localStorage.removeItem('dawatAdminSession');
+      isAdmin = false;
+      closeAdminPanel();
+      updateAuthUI();
+      showToast('👋 Logged out successfully.');
+      // Also sign out from Firebase (for Google/email users)
+      auth.signOut().catch(() => {}); // silent - already cleared locally
     }
 
     function updateAuthUI() {
       const loggedIn = isAdminLoggedIn() || isAdmin;
+
+      // Clean up any previously injected buttons
+      ['logout-nav-btn', 'admin-panel-nav-btn'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.remove();
+      });
+
+      const navButtonsEl = document.querySelector('.nav-buttons');
+
       if (loggedIn) {
-        adminBtn.textContent = 'ADMIN PANEL';
-        adminBtn.onclick = openAdminPanel;
-        if (!document.getElementById('logout-nav-btn')) {
-          const btn = document.createElement('button');
-          btn.id = 'logout-nav-btn';
-          btn.className = 'btn btn-secondary';
-          btn.textContent = 'LOGOUT';
-          btn.onclick = handleLogout;
-          document.querySelector('.nav-buttons').appendChild(btn);
+        // ---- Logged in state ----
+        if (isAdmin) {
+          // Admin: show ADMIN PANEL  |  LOGOUT
+          const panelBtn = document.createElement('button');
+          panelBtn.id = 'admin-panel-nav-btn';
+          panelBtn.className = 'btn btn-primary';
+          panelBtn.textContent = 'ADMIN PANEL';
+          panelBtn.onclick = openAdminPanel;
+          navButtonsEl.insertBefore(panelBtn, adminBtn);
         }
+        adminBtn.textContent = 'LOGOUT';
+        adminBtn.className = 'btn btn-secondary';
+        adminBtn.onclick = handleLogout;
       } else {
+        // ---- Logged out state ----
         adminBtn.textContent = 'LOGIN';
+        adminBtn.className = 'btn btn-primary';
         adminBtn.onclick = openAuthModal;
-        const logoutBtn = document.getElementById('logout-nav-btn');
-        if (logoutBtn) logoutBtn.remove();
       }
     }
 
