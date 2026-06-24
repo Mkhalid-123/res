@@ -464,7 +464,27 @@
       document.getElementById('contact-form').addEventListener('submit', handleContactSubmit);
       // Setup Firebase Google sign-in
       setupFirebaseGoogleSignIn();
-      
+
+      // Handle redirect result (mobile Google sign-in returns here after redirect)
+      auth.getRedirectResult().then(result => {
+        if (result && result.user) {
+          const user = result.user;
+          if (user.email === 'khalidmkhalid.com.pk@gmail.com') {
+            isAdmin = true;
+          } else {
+            isAdmin = false;
+          }
+          localStorage.setItem('dawatAdminSession', JSON.stringify({ email: user.email, loggedIn: true }));
+          updateAuthUI();
+          showToast('Google Sign-In successful!');
+          if (isAdmin) openAdminPanel();
+        }
+      }).catch(error => {
+        if (error.code !== 'auth/popup-closed-by-user') {
+          console.error('Redirect sign-in error:', error);
+        }
+      });
+
       // Check auth state
       auth.onAuthStateChanged(user => {
         if (user) {
@@ -795,25 +815,37 @@
           Sign in with Google
         `;
         btn.onclick = () => {
-          auth.signInWithPopup(provider)
-            .then(result => {
-              const user = result.user;
-              if (user.email === 'khalidmkhalid.com.pk@gmail.com') {
-                isAdmin = true;
-              } else {
-                isAdmin = false;
-              }
-              localStorage.setItem('dawatAdminSession', JSON.stringify({ email: user.email, loggedIn: true }));
-              closeAuthModal();
-              updateAuthUI();
-              showToast('Google Sign-In successful!');
-              if (isAdmin) openAdminPanel();
-            })
-            .catch(error => {
+          const isMobile = /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent);
+          if (isMobile) {
+            // On mobile, use redirect to avoid popup-closed-by-user error
+            auth.signInWithRedirect(provider).catch(error => {
               const errorEl = document.getElementById('auth-error');
               errorEl.textContent = 'Google sign-in failed: ' + error.message;
               errorEl.classList.add('show');
             });
+          } else {
+            // On desktop, use popup for a faster experience
+            auth.signInWithPopup(provider)
+              .then(result => {
+                const user = result.user;
+                if (user.email === 'khalidmkhalid.com.pk@gmail.com') {
+                  isAdmin = true;
+                } else {
+                  isAdmin = false;
+                }
+                localStorage.setItem('dawatAdminSession', JSON.stringify({ email: user.email, loggedIn: true }));
+                closeAuthModal();
+                updateAuthUI();
+                showToast('Google Sign-In successful!');
+                if (isAdmin) openAdminPanel();
+              })
+              .catch(error => {
+                if (error.code === 'auth/popup-closed-by-user') return; // user dismissed, no action
+                const errorEl = document.getElementById('auth-error');
+                errorEl.textContent = 'Google sign-in failed: ' + error.message;
+                errorEl.classList.add('show');
+              });
+          }
         };
         container.appendChild(btn);
       } catch (e) {
