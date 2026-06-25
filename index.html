@@ -1077,7 +1077,7 @@
         return;
       }
       form.style.display = '';
-      const items = data[currentAdminTab] || [];
+      const items = currentAdminTab === 'menu' ? data.menuItems : (data[currentAdminTab] || []);
       const label = currentAdminTab.charAt(0).toUpperCase()+currentAdminTab.slice(1);
       list.innerHTML = `<h3 style="margin-top:0;">${label} (${items.length})</h3>${items.length===0?'<p style="color:#666;">No items.</p>':items.map(item=>`
         <div class="admin-item">
@@ -1114,7 +1114,11 @@
         const el = document.getElementById(`form-${f}`);
         if (el) newItem[f] = el.type==='number' ? Number(el.value) : el.value;
       });
-      data[currentAdminTab].push(newItem);
+      if (currentAdminTab === 'menu') {
+        data.menuItems.push(newItem);
+      } else {
+        data[currentAdminTab].push(newItem);
+      }
       saveData();
       renderAdminList();
       if (currentAdminTab==='menu') renderMenu('All');
@@ -1137,6 +1141,7 @@
     function deleteAdminItem(id) {
       showConfirm('Are you sure you want to delete this item?', () => {
         if (currentAdminTab==='orders') data.orders = data.orders.filter(o=>o.id!==id);
+        else if (currentAdminTab==='menu') data.menuItems = data.menuItems.filter(i=>i.id!==id);
         else data[currentAdminTab] = data[currentAdminTab].filter(i=>i.id!==id);
         saveData();
         renderAdminList();
