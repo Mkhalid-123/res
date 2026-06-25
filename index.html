@@ -498,8 +498,23 @@
         updateAuthUI();
       });
 
-      // Handle google redirect errors
-      auth.getRedirectResult().catch(error => {
+      // Handle google redirect results (success & error)
+      auth.getRedirectResult().then(function(result) {
+        if (result.user) {
+          // Successfully signed in with Google!
+          currentUser = result.user;
+          isAdmin = (result.user.email === 'khalidmkhalid.com.pk@gmail.com');
+          localStorage.setItem('dawatAdminSession', JSON.stringify({ email: result.user.email, loggedIn: true }));
+          const pendingRedirect = sessionStorage.getItem('googleRedirectPending');
+          if (pendingRedirect) {
+            sessionStorage.removeItem('googleRedirectPending');
+            closeAuthModal();
+            showToast('Google Sign-In successful! Welcome, ' + (result.user.displayName || result.user.email));
+            if (isAdmin) openAdminPanel();
+          }
+          updateAuthUI();
+        }
+      }).catch(error => {
         const errorEl = document.getElementById('auth-error');
         if (!errorEl) return;
         errorEl.textContent = getFriendlyAuthError(error.code, error.message);
