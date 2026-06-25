@@ -282,19 +282,21 @@
       <div class="container">
         <div class="nav-content">
           <div class="logo"><div class="logo-circle">D</div><h1>BEST PIZZA DAWAT</h1></div>
-          <ul class="nav-links" id="navLinks">
-            <li><a href="#home">Home</a></li>
-            <li><a href="#about">About</a></li>
-            <li><a href="#menu">Menu</a></li>
-            <li><a href="#gallery">Gallery</a></li>
-            <li><a href="#chefs">Chefs</a></li>
-            <li><a href="#contact">Contact</a></li>
-          </ul>
-          <div class="nav-buttons" id="navButtons">
-            <button class="btn btn-secondary" onclick="openCartModal()">🛒 Cart (<span id="cart-count">0</span>)</button>
-            <button class="btn btn-primary" id="admin-btn">LOGIN</button>
+          <div class="nav-menu" id="navMenu">
+            <ul class="nav-links" id="navLinks">
+              <li><a href="#home">Home</a></li>
+              <li><a href="#about">About</a></li>
+              <li><a href="#menu">Menu</a></li>
+              <li><a href="#gallery">Gallery</a></li>
+              <li><a href="#chefs">Chefs</a></li>
+              <li><a href="#contact">Contact</a></li>
+            </ul>
+            <div class="nav-buttons" id="navButtons">
+              <button class="btn btn-secondary" onclick="openCartModal()">🛒 Cart (<span id="cart-count">0</span>)</button>
+              <button class="btn btn-primary" id="admin-btn">LOGIN</button>
+            </div>
           </div>
-          <button class="mobile-menu-btn" onclick="toggleMobileMenu()"><span></span><span></span><span></span></button>
+          <button class="mobile-menu-btn" id="mobileMenuBtn" onclick="toggleMobileMenu()"><span></span><span></span><span></span></button>
         </div>
       </div>
     </nav>
@@ -502,49 +504,28 @@
         updateAuthUI();
       });
 
-      // Handle google redirect results (success & error)
-      auth.getRedirectResult().then(function(result) {
-        if (result.user) {
-          // Successfully signed in with Google!
-          currentUser = result.user;
-          isAdmin = (result.user.email === 'khalidmkhalid.com.pk@gmail.com');
-          localStorage.setItem('dawatAdminSession', JSON.stringify({ email: result.user.email, loggedIn: true }));
-          const pendingRedirect = sessionStorage.getItem('googleRedirectPending');
-          if (pendingRedirect) {
-            sessionStorage.removeItem('googleRedirectPending');
-            closeAuthModal();
-            showToast('Google Sign-In successful! Welcome, ' + (result.user.displayName || result.user.email));
-            if (isAdmin) openAdminPanel();
-          }
-          updateAuthUI();
-        }
-      }).catch(error => {
-        const errorEl = document.getElementById('auth-error');
-        if (!errorEl) return;
-        errorEl.textContent = getFriendlyAuthError(error.code, error.message);
-        errorEl.classList.add('show');
-        openAuthModal();
-        sessionStorage.removeItem('googleRedirectPending');
-      });
     });
 
     // ----- NAV / MOBILE -----
     function toggleMobileMenu() {
-      navLinks.classList.toggle('active');
-      navButtons.classList.toggle('active');
-      document.querySelector('.mobile-menu-btn').classList.toggle('active');
+      const navMenu = document.getElementById('navMenu');
+      const menuBtn = document.getElementById('mobileMenuBtn');
+      navMenu.classList.toggle('active');
+      menuBtn.classList.toggle('active');
+      document.body.classList.toggle('menu-open');
     }
-    document.querySelectorAll('.nav-links a').forEach(a => a.addEventListener('click', ()=>{
-      navLinks.classList.remove('active');
-      navButtons.classList.remove('active');
-      document.querySelector('.mobile-menu-btn').classList.remove('active');
-    }));
+    function closeMobileMenu() {
+      const navMenu = document.getElementById('navMenu');
+      const menuBtn = document.getElementById('mobileMenuBtn');
+      navMenu.classList.remove('active');
+      menuBtn.classList.remove('active');
+      document.body.classList.remove('menu-open');
+    }
+    document.querySelectorAll('.nav-links a').forEach(a => a.addEventListener('click', closeMobileMenu));
 
     function scrollToSection(id) {
       document.getElementById(id)?.scrollIntoView({ behavior:'smooth' });
-      navLinks.classList.remove('active');
-      navButtons.classList.remove('active');
-      document.querySelector('.mobile-menu-btn').classList.remove('active');
+      closeMobileMenu();
     }
 
     // ----- PACKAGE SLIDER -----
@@ -803,7 +784,7 @@
       const loggedIn = isAnyUserLoggedIn();
 
       // Clean up any previously injected buttons
-      ['logout-nav-btn', 'admin-panel-nav-btn', 'user-email-display'].forEach(id => {
+      ['logout-nav-btn', 'admin-panel-nav-btn', 'user-email-display', 'profile-dropdown-widget'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.remove();
       });
@@ -812,11 +793,13 @@
 
       if (loggedIn) {
         // ---- Logged in state ----
-        
-        // Show Email Display
-        const emailDisplay = document.createElement('span');
-        emailDisplay.id = 'user-email-display';
-        emailDisplay.style.cssText = 'font-weight: 600; font-size: 14px; color: var(--dark, #1d3557); margin-right: 15px; display: inline-flex; align-items: center;';
+        const adminBtn = document.getElementById('admin-btn');
+        adminBtn.style.display = 'none'; // hide generic login button
+
+        const profileDropdown = document.createElement('div');
+        profileDropdown.className = 'profile-dropdown';
+        profileDropdown.id = 'profile-dropdown-widget';
+
         let displayEmail = 'User';
         const session = JSON.parse(localStorage.getItem('dawatAdminSession') || 'null');
         if (currentUser && currentUser.email) {
@@ -826,24 +809,56 @@
         } else if (isAdminLoggedIn()) {
           displayEmail = 'khalidmkhalid.com.pk@gmail.com';
         }
-        emailDisplay.innerHTML = `<svg style="width:16px;height:16px;margin-right:6px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>${displayEmail}`;
-        navButtonsEl.insertBefore(emailDisplay, adminBtn);
+
+        const toggleBtn = document.createElement('button');
+        toggleBtn.className = 'profile-toggle';
+        toggleBtn.innerHTML = `
+          <svg style="width:16px;height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg> Profile 
+          <svg style="width:14px;height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        `;
+        
+        const menuEl = document.createElement('div');
+        menuEl.className = 'profile-menu';
+
+        const emailDisplay = document.createElement('div');
+        emailDisplay.id = 'user-email-display';
+        emailDisplay.innerHTML = `<strong>Logged in as:</strong><br>${displayEmail}`;
+        menuEl.appendChild(emailDisplay);
 
         if (isAdmin || isAdminLoggedIn()) {
-          // Admin: show ADMIN PANEL  |  LOGOUT
           isAdmin = true;
           const panelBtn = document.createElement('button');
-          panelBtn.id = 'admin-panel-nav-btn';
           panelBtn.className = 'btn btn-primary';
           panelBtn.textContent = 'ADMIN PANEL';
           panelBtn.onclick = openAdminPanel;
-          navButtonsEl.insertBefore(panelBtn, adminBtn);
+          menuEl.appendChild(panelBtn);
         }
-        adminBtn.textContent = 'LOGOUT';
-        adminBtn.className = 'btn btn-secondary';
-        adminBtn.onclick = handleLogout;
+
+        const logoutBtn = document.createElement('button');
+        logoutBtn.className = 'btn btn-secondary';
+        logoutBtn.textContent = 'LOGOUT';
+        logoutBtn.onclick = handleLogout;
+        menuEl.appendChild(logoutBtn);
+
+        profileDropdown.appendChild(toggleBtn);
+        profileDropdown.appendChild(menuEl);
+
+        toggleBtn.onclick = (e) => {
+          e.stopPropagation();
+          menuEl.classList.toggle('show');
+        };
+
+        document.addEventListener('click', (e) => {
+          if (!profileDropdown.contains(e.target)) {
+            menuEl.classList.remove('show');
+          }
+        });
+
+        navButtonsEl.appendChild(profileDropdown);
       } else {
         // ---- Logged out state ----
+        const adminBtn = document.getElementById('admin-btn');
+        adminBtn.style.display = 'inline-flex';
         adminBtn.textContent = 'LOGIN';
         adminBtn.className = 'btn btn-primary';
         adminBtn.onclick = openAuthModal;
@@ -919,16 +934,15 @@
         btn.disabled = true;
         btn.innerHTML = '<span style="display:inline-block;width:18px;height:18px;border:2px solid #ddd;border-top-color:#e63946;border-radius:50%;animation:spin 0.7s linear infinite;"></span>&nbsp;Connecting to Google...';
 
-        // Mark that we are doing a redirect (sessionStorage survives redirect)
-        sessionStorage.setItem('googleRedirectPending', '1');
-
-        // Use signInWithRedirect — works on ALL devices (mobile + desktop)
-        // no popup = no popup-blocked / popup-closed errors
-        auth.signInWithRedirect(provider).catch(function(error) {
-          sessionStorage.removeItem('googleRedirectPending');
+        // Use signInWithPopup instead of redirect so it works locally on file:// protocol
+        auth.signInWithPopup(provider).then((result) => {
+          closeAuthModal();
+          showToast('Google Sign-In successful! Welcome, ' + (result.user.displayName || result.user.email));
+          if (isAdminLoggedIn()) openAdminPanel();
+        }).catch(function(error) {
           btn.disabled = false;
           btn.innerHTML = `<svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59A14.5 14.5 0 0 1 9.5 24c0-1.59.28-3.14.76-4.59l-7.98-6.19A23.99 23.99 0 0 0 0 24c0 3.77.87 7.35 2.56 10.56l7.97-5.97z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 5.97C6.51 42.62 14.62 48 24 48z"/></svg> Continue with Google`;
-          if (errorEl) {
+          if (errorEl && error.code !== 'auth/popup-closed-by-user') {
             errorEl.textContent = getFriendlyAuthError(error.code, error.message);
             errorEl.classList.add('show');
           }
@@ -943,32 +957,29 @@
       if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') return;
       gsap.registerPlugin(ScrollTrigger);
 
-      // Hero animations
-      gsap.fromTo('.hero-content h1', { y: 50, opacity: 0 }, { y: 0, opacity: 1, duration: 1, ease: 'power3.out' });
-      gsap.fromTo('.hero-content h2', { y: 50, opacity: 0 }, { y: 0, opacity: 1, duration: 1, delay: 0.2, ease: 'power3.out' });
-      gsap.fromTo('.hero-content p', { y: 50, opacity: 0 }, { y: 0, opacity: 1, duration: 1, delay: 0.4, ease: 'power3.out' });
-      gsap.fromTo('.hero-content .btn', { y: 50, opacity: 0 }, { y: 0, opacity: 1, duration: 1, delay: 0.6, ease: 'power3.out', clearProps: 'all' });
+      // Hero animations (Simple Fade & Slide)
+      gsap.fromTo('.hero-content', { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, ease: 'power2.out', clearProps: 'all' });
 
       // Story Section
       gsap.fromTo('.story-card', 
-        { y: 100, opacity: 0 },
-        { y: 0, opacity: 1, duration: 1, ease: 'power3.out', scrollTrigger: { trigger: '.story', start: 'top 80%' } }
+        { y: 30, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.8, ease: 'power2.out', scrollTrigger: { trigger: '.story', start: 'top 85%' }, clearProps: 'all' }
       );
 
       // Packages Section
       gsap.fromTo('.package-slider', 
-        { scale: 0.9, opacity: 0 },
-        { scale: 1, opacity: 1, duration: 1, ease: 'back.out(1.5)', scrollTrigger: { trigger: '.packages', start: 'top 80%' } }
+        { y: 30, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.8, ease: 'power2.out', scrollTrigger: { trigger: '.packages', start: 'top 85%' }, clearProps: 'all' }
       );
 
       // Menu Section (Staggered)
       ScrollTrigger.create({
         trigger: '.menu',
-        start: 'top 80%',
+        start: 'top 85%',
         onEnter: () => {
           gsap.fromTo('.menu-item', 
-            { y: 50, opacity: 0 }, 
-            { y: 0, opacity: 1, duration: 0.5, stagger: 0.1, ease: 'power2.out', clearProps: 'all' }
+            { y: 30, opacity: 0 }, 
+            { y: 0, opacity: 1, duration: 0.5, stagger: 0.05, ease: 'power2.out', clearProps: 'all' }
           );
         }
       });
@@ -976,11 +987,11 @@
       // Chefs Section (Staggered)
       ScrollTrigger.create({
         trigger: '.chefs',
-        start: 'top 80%',
+        start: 'top 85%',
         onEnter: () => {
           gsap.fromTo('.chef-card', 
-            { x: -50, opacity: 0 }, 
-            { x: 0, opacity: 1, duration: 0.5, stagger: 0.1, ease: 'power2.out', clearProps: 'all' }
+            { y: 30, opacity: 0 }, 
+            { y: 0, opacity: 1, duration: 0.5, stagger: 0.05, ease: 'power2.out', clearProps: 'all' }
           );
         }
       });
@@ -988,11 +999,11 @@
       // Gallery Section (Staggered)
       ScrollTrigger.create({
         trigger: '.gallery',
-        start: 'top 80%',
+        start: 'top 85%',
         onEnter: () => {
           gsap.fromTo('.gallery-item', 
-            { scale: 0.8, opacity: 0 }, 
-            { scale: 1, opacity: 1, duration: 0.5, stagger: 0.1, ease: 'back.out(1.2)', clearProps: 'all' }
+            { y: 30, opacity: 0 }, 
+            { y: 0, opacity: 1, duration: 0.5, stagger: 0.05, ease: 'power2.out', clearProps: 'all' }
           );
         }
       });
