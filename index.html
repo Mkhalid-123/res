@@ -272,6 +272,8 @@
   -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 </head>
 <body>
   <!-- HEADER -->
@@ -399,14 +401,14 @@
     // ----- DATA & STORAGE -----
     const initialData = {
       menuItems: [
-        { id:1, name:"Margherita Pizza", category:"Pizza", price:299, description:"Classic tomato, mozzarella, and basil", image:"https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=400", tag:"Hot" },
-        { id:2, name:"Pepperoni Pizza", category:"Pizza", price:349, description:"Loaded with pepperoni and cheese", image:"https://images.unsplash.com/photo-1628840042765-356cda07504e?w=400", tag:"New" },
-        { id:3, name:"BBQ Chicken Burger", category:"Burger", price:199, description:"Grilled chicken with BBQ sauce", image:"https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400", tag:"" },
-        { id:4, name:"Classic Beef Burger", category:"Burger", price:179, description:"Juicy beef patty with fresh veggies", image:"https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400", tag:"Hot" },
-        { id:5, name:"Spaghetti Carbonara", category:"Pasta", price:249, description:"Creamy pasta with bacon", image:"https://images.unsplash.com/photo-1612874742237-6526221588e3?w=400", tag:"" },
-        { id:6, name:"Caesar Salad", category:"Salad", price:149, description:"Fresh romaine with parmesan", image:"https://images.unsplash.com/photo-1546793665-c74683f339c1?w=400", tag:"New" },
-        { id:7, name:"Chocolate Lava Cake", category:"Dessert", price:129, description:"Warm chocolate center", image:"https://images.unsplash.com/photo-1624353365286-3f8d62daad51?w=400", tag:"Hot" },
-        { id:8, name:"Tiramisu", category:"Dessert", price:149, description:"Classic Italian dessert", image:"https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?w=400", tag:"" }
+        { id:1, name:"Margherita Pizza", category:"Pizza", price:299, description:"Classic tomato, mozzarella, and basil", image:"https://images.unsplash.com/photo-1574071318508-1cdbab80d002?q=80&w=600&auto=format&fit=crop", tag:"Hot" },
+        { id:2, name:"Pepperoni Pizza", category:"Pizza", price:349, description:"Loaded with pepperoni and cheese", image:"https://images.unsplash.com/photo-1628840042765-356cda07504e?q=80&w=600&auto=format&fit=crop", tag:"New" },
+        { id:3, name:"BBQ Chicken Burger", category:"Burger", price:199, description:"Grilled chicken with BBQ sauce", image:"https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=600&auto=format&fit=crop", tag:"" },
+        { id:4, name:"Classic Beef Burger", category:"Burger", price:179, description:"Juicy beef patty with fresh veggies", image:"https://images.unsplash.com/photo-1586190848861-99aa4a171e90?q=80&w=600&auto=format&fit=crop", tag:"Hot" },
+        { id:5, name:"Spaghetti Carbonara", category:"Pasta", price:249, description:"Creamy pasta with bacon", image:"https://images.unsplash.com/photo-1612874742237-6526221588e3?q=80&w=600&auto=format&fit=crop", tag:"" },
+        { id:6, name:"Caesar Salad", category:"Salad", price:149, description:"Fresh romaine with parmesan", image:"https://images.unsplash.com/photo-1546793665-c74683f339c1?q=80&w=600&auto=format&fit=crop", tag:"New" },
+        { id:7, name:"Chocolate Lava Cake", category:"Dessert", price:129, description:"Warm chocolate center", image:"https://images.unsplash.com/photo-1624353365286-3f8d62daad51?q=80&w=600&auto=format&fit=crop", tag:"Hot" },
+        { id:8, name:"Tiramisu", category:"Dessert", price:149, description:"Classic Italian dessert", image:"https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?q=80&w=600&auto=format&fit=crop", tag:"" }
       ],
       packages: [
         { id:1, name:"Family Combo", price:999, description:"2 Large Pizzas + 4 Drinks + Fries", image:"https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=600" },
@@ -425,16 +427,17 @@
         { id:3, title:"Award Winning Chefs", excerpt:"Our head chef Marco Rossi wins the Golden Chef Award 2024.", image:"https://images.unsplash.com/photo-1577219491135-ce391730fb2c?w=400", date:"2024-06-05" }
       ],
       gallery: [
-        { id:1, image:"https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400" },
-        { id:2, image:"https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400" },
-        { id:3, image:"https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=400" },
-        { id:4, image:"https://images.unsplash.com/photo-1604382355076-af4b0eb60143?w=400" },
-        { id:5, image:"https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400" },
-        { id:6, image:"https://images.unsplash.com/photo-1546793665-c74683f339c1?w=400" }
+        { id:1, image:"https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=600&auto=format&fit=crop" },
+        { id:2, image:"https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?q=80&w=600&auto=format&fit=crop" },
+        { id:3, image:"https://images.unsplash.com/photo-1574071318508-1cdbab80d002?q=80&w=600&auto=format&fit=crop" },
+        { id:4, image:"https://images.unsplash.com/photo-1604382355076-af4b0eb60143?q=80&w=600&auto=format&fit=crop" },
+        { id:5, image:"https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=600&auto=format&fit=crop" },
+        { id:6, image:"https://images.unsplash.com/photo-1546793665-c74683f339c1?q=80&w=600&auto=format&fit=crop" }
       ],
       orders: []
     };
 
+    localStorage.removeItem('dawatData'); // Reset data for updated images
     let data = JSON.parse(localStorage.getItem('dawatData'));
     if (!data) { data = JSON.parse(JSON.stringify(initialData)); localStorage.setItem('dawatData', JSON.stringify(data)); }
     else { for (let key in initialData) if (!data[key]) data[key] = initialData[key]; if (!Array.isArray(data.orders)) data.orders = []; localStorage.setItem('dawatData', JSON.stringify(data)); }
@@ -465,7 +468,10 @@
       // Setup Firebase Google sign-in button
       setupFirebaseGoogleSignIn();
 
-      // Restore admin session from localStorage immediately on load
+      // Initialize GSAP Animations
+      setupGSAPAnimations();
+
+      // Restore session from localStorage immediately on load
       const storedSession = JSON.parse(localStorage.getItem('dawatAdminSession') || 'null');
       if (storedSession && storedSession.loggedIn) {
         currentUser = storedSession;
@@ -488,12 +494,10 @@
             if (isAdmin) openAdminPanel();
           }
         } else {
-          // Only clear admin if there is no hardcoded session active
-          const session = JSON.parse(localStorage.getItem('dawatAdminSession') || 'null');
-          if (!session || !session.loggedIn) {
-            isAdmin = false;
-            currentUser = null;
-          }
+          // Clear everything
+          localStorage.removeItem('dawatAdminSession');
+          isAdmin = false;
+          currentUser = null;
         }
         updateAuthUI();
       });
@@ -773,6 +777,11 @@
         });
     }
 
+    function isAnyUserLoggedIn() {
+      const session = JSON.parse(localStorage.getItem('dawatAdminSession') || 'null');
+      return (session && session.loggedIn) || (currentUser !== null) || isAdmin;
+    }
+
     function isAdminLoggedIn() {
       const session = JSON.parse(localStorage.getItem('dawatAdminSession') || 'null');
       return session && session.loggedIn && session.email === 'khalidmkhalid.com.pk@gmail.com';
@@ -791,10 +800,10 @@
     }
 
     function updateAuthUI() {
-      const loggedIn = (currentUser !== null) || isAdminLoggedIn() || isAdmin;
+      const loggedIn = isAnyUserLoggedIn();
 
       // Clean up any previously injected buttons
-      ['logout-nav-btn', 'admin-panel-nav-btn'].forEach(id => {
+      ['logout-nav-btn', 'admin-panel-nav-btn', 'user-email-display'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.remove();
       });
@@ -803,8 +812,26 @@
 
       if (loggedIn) {
         // ---- Logged in state ----
-        if (isAdmin) {
+        
+        // Show Email Display
+        const emailDisplay = document.createElement('span');
+        emailDisplay.id = 'user-email-display';
+        emailDisplay.style.cssText = 'font-weight: 600; font-size: 14px; color: var(--dark, #1d3557); margin-right: 15px; display: inline-flex; align-items: center;';
+        let displayEmail = 'User';
+        const session = JSON.parse(localStorage.getItem('dawatAdminSession') || 'null');
+        if (currentUser && currentUser.email) {
+          displayEmail = currentUser.email;
+        } else if (session && session.email) {
+          displayEmail = session.email;
+        } else if (isAdminLoggedIn()) {
+          displayEmail = 'khalidmkhalid.com.pk@gmail.com';
+        }
+        emailDisplay.innerHTML = `<svg style="width:16px;height:16px;margin-right:6px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>${displayEmail}`;
+        navButtonsEl.insertBefore(emailDisplay, adminBtn);
+
+        if (isAdmin || isAdminLoggedIn()) {
           // Admin: show ADMIN PANEL  |  LOGOUT
+          isAdmin = true;
           const panelBtn = document.createElement('button');
           panelBtn.id = 'admin-panel-nav-btn';
           panelBtn.className = 'btn btn-primary';
@@ -909,6 +936,66 @@
       };
 
       container.appendChild(btn);
+    }
+
+    // ----- GSAP ANIMATIONS -----
+    function setupGSAPAnimations() {
+      if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') return;
+      gsap.registerPlugin(ScrollTrigger);
+
+      // Hero animations
+      gsap.fromTo('.hero-content h1', { y: 50, opacity: 0 }, { y: 0, opacity: 1, duration: 1, ease: 'power3.out' });
+      gsap.fromTo('.hero-content h2', { y: 50, opacity: 0 }, { y: 0, opacity: 1, duration: 1, delay: 0.2, ease: 'power3.out' });
+      gsap.fromTo('.hero-content p', { y: 50, opacity: 0 }, { y: 0, opacity: 1, duration: 1, delay: 0.4, ease: 'power3.out' });
+      gsap.fromTo('.hero-content .btn', { y: 50, opacity: 0 }, { y: 0, opacity: 1, duration: 1, delay: 0.6, ease: 'power3.out', clearProps: 'all' });
+
+      // Story Section
+      gsap.fromTo('.story-card', 
+        { y: 100, opacity: 0 },
+        { y: 0, opacity: 1, duration: 1, ease: 'power3.out', scrollTrigger: { trigger: '.story', start: 'top 80%' } }
+      );
+
+      // Packages Section
+      gsap.fromTo('.package-slider', 
+        { scale: 0.9, opacity: 0 },
+        { scale: 1, opacity: 1, duration: 1, ease: 'back.out(1.5)', scrollTrigger: { trigger: '.packages', start: 'top 80%' } }
+      );
+
+      // Menu Section (Staggered)
+      ScrollTrigger.create({
+        trigger: '.menu',
+        start: 'top 80%',
+        onEnter: () => {
+          gsap.fromTo('.menu-item', 
+            { y: 50, opacity: 0 }, 
+            { y: 0, opacity: 1, duration: 0.5, stagger: 0.1, ease: 'power2.out', clearProps: 'all' }
+          );
+        }
+      });
+
+      // Chefs Section (Staggered)
+      ScrollTrigger.create({
+        trigger: '.chefs',
+        start: 'top 80%',
+        onEnter: () => {
+          gsap.fromTo('.chef-card', 
+            { x: -50, opacity: 0 }, 
+            { x: 0, opacity: 1, duration: 0.5, stagger: 0.1, ease: 'power2.out', clearProps: 'all' }
+          );
+        }
+      });
+      
+      // Gallery Section (Staggered)
+      ScrollTrigger.create({
+        trigger: '.gallery',
+        start: 'top 80%',
+        onEnter: () => {
+          gsap.fromTo('.gallery-item', 
+            { scale: 0.8, opacity: 0 }, 
+            { scale: 1, opacity: 1, duration: 0.5, stagger: 0.1, ease: 'back.out(1.2)', clearProps: 'all' }
+          );
+        }
+      });
     }
 
     // ----- ADMIN PANEL -----
