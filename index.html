@@ -442,11 +442,21 @@
       messages: []
     };
 
-    let data = JSON.parse(JSON.stringify(initialData));
+    let data = JSON.parse(localStorage.getItem('dawatData'));
+    if (!data) { 
+      data = JSON.parse(JSON.stringify(initialData)); 
+      localStorage.setItem('dawatData', JSON.stringify(data)); 
+    } else { 
+      for (let key in initialData) if (!data[key]) data[key] = initialData[key]; 
+      if (!Array.isArray(data.orders)) data.orders = []; 
+      if (!Array.isArray(data.messages)) data.messages = []; 
+      localStorage.setItem('dawatData', JSON.stringify(data)); 
+    }
 
     function saveData() {
+      localStorage.setItem('dawatData', JSON.stringify(data));
       db.collection('restaurant').doc('mainData').set(data).then(() => {
-        console.log("Data saved to Firestore.");
+        console.log("Data saved to Firestore and localStorage.");
       }).catch((e) => {
         console.error("Error saving data:", e);
       });
