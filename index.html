@@ -472,16 +472,8 @@
       messages: []
     };
 
-    let data = JSON.parse(localStorage.getItem('dawatData'));
-    if (!data) { 
-      data = JSON.parse(JSON.stringify(initialData)); 
-      localStorage.setItem('dawatData', JSON.stringify(data)); 
-    } else { 
-      for (let key in initialData) if (!data[key]) data[key] = initialData[key]; 
-      if (!Array.isArray(data.orders)) data.orders = []; 
-      if (!Array.isArray(data.messages)) data.messages = []; 
-      localStorage.setItem('dawatData', JSON.stringify(data)); 
-    }
+    // Initialize data from localStorage as fallback, but will be overridden by Firestore
+    let data = JSON.parse(localStorage.getItem('dawatData')) || JSON.parse(JSON.stringify(initialData));
 
     function saveData() {
       // Always save to localStorage first for instant access
@@ -508,13 +500,20 @@
 
     // ----- INIT -----
     document.addEventListener('DOMContentLoaded', function() {
-      // First get initial data
+      // First get initial data from Firestore to ensure latest data is loaded
       db.collection('restaurant').doc('mainData').get().then((doc) => {
         if (doc.exists) {
           const d = doc.data();
-          for (let k in initialData) if (d[k]) data[k] = d[k];
+          // Update all data from Firestore to ensure mobile gets latest data
+          for (let k in initialData) {
+            if (d[k]) {
+              data[k] = d[k];
+            }
+          }
           if (!Array.isArray(data.orders)) data.orders = [];
           if (!Array.isArray(data.messages)) data.messages = [];
+          // Save to localStorage to keep it in sync
+          localStorage.setItem('dawatData', JSON.stringify(data));
         } else {
           saveData();
         }
@@ -532,7 +531,7 @@
       db.collection('restaurant').doc('mainData').onSnapshot((doc) => {
         if (doc.exists) {
           const d = doc.data();
-          // Only update if there are actual changes
+          // Always update all data from Firestore to ensure mobile gets latest changes
           let hasChanges = false;
           for (let k in initialData) {
             if (d[k] && JSON.stringify(data[k]) !== JSON.stringify(d[k])) {
@@ -543,16 +542,14 @@
           if (!Array.isArray(data.orders)) data.orders = [];
           if (!Array.isArray(data.messages)) data.messages = [];
 
-          if (hasChanges) {
-            // Save to localStorage and re-render UI
-            localStorage.setItem('dawatData', JSON.stringify(data));
-            renderPackages();
-            renderMenu('All');
-            renderChefs();
-            renderNews();
-            renderGallery();
-            console.log("🔄 Real-time data sync complete!");
-          }
+          // Always save to localStorage and re-render to ensure mobile shows latest data
+          localStorage.setItem('dawatData', JSON.stringify(data));
+          renderPackages();
+          renderMenu('All');
+          renderChefs();
+          renderNews();
+          renderGallery();
+          console.log("🔄 Real-time data sync complete!");
         }
       });
 
@@ -1347,7 +1344,7 @@
           <label>${f.charAt(0).toUpperCase()+f.slice(1)}</label>
           ${fieldTypes[f]==='textarea'?`<textarea id="form-${f}" placeholder="${f}"></textarea>`:
             fieldTypes[f]==='select'?`<select id="form-${f}">${(selectOptions[f]||[]).map(opt=>`<option value="${opt}">${opt||'None'}</option>`).join('')}</select>`:
-            `<input type="${fieldTypes[f]||'text'}" id="form-${f}" placeholder="${f}">`}
+            `<input type="${fieldTypes[f]||'text'}" id="form-${f}" placeholder="${f}" autocomplete="off" autocorrect="off" autocapitalize="off">`}
         </div>
       `).join('')}</div><button class="btn btn-primary" onclick="addAdminItem()">Add Item</button>`;
     }
@@ -1361,7 +1358,17 @@
           if (el.type==='number') {
             newItem[f] = Number(el.value);
           } else {
-            let value = el.value.trim(); // Trim all string inputs to fix mobile copy-paste issues!
+            // Force blur to ensure Chrome mobile commits the value
+            el.blur();
+            
+            // Get value using multiple methods to ensure mobile compatibility
+            let value = '';
+            if (el.value !== undefined && el.value !== null) {
+              value = String(el.value).trim();
+            } else if (el.textContent !== undefined && el.textContent !== null) {
+              value = el.textContent.trim();
+            }
+            
             // Auto-add https:// if missing for image fields
             if (f === 'image' && value && !value.startsWith('http://') && !value.startsWith('https://')) {
               value = 'https://' + value;
@@ -1370,6 +1377,16 @@
           }
         }
       });
+      
+      // Debug logging for mobile troubleshooting
+      console.log('Adding item from mobile:', newItem);
+      
+      // Validate that image field has a value for tabs that require images
+      if (currentAdminTab === 'gallery' && !newItem.image) {
+        showToast('Please enter an image URL');
+        return;
+      }
+      
       if (currentAdminTab === 'menu') {
         data.menuItems.push(newItem);
       } else {
