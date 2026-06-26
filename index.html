@@ -484,11 +484,13 @@
     }
 
     function saveData() {
+      // Always save to localStorage first for instant access
       localStorage.setItem('dawatData', JSON.stringify(data));
+      // Then save to Firestore asynchronously
       db.collection('restaurant').doc('mainData').set(data).then(() => {
-        console.log("Data saved to Firestore and localStorage.");
+        console.log("✅ Data saved to Firestore and localStorage successfully!");
       }).catch((e) => {
-        console.error("Error saving data:", e);
+        console.error("❌ Error saving data to Firestore:", e);
       });
     }
 
@@ -506,6 +508,7 @@
 
     // ----- INIT -----
     document.addEventListener('DOMContentLoaded', function() {
+      // First get initial data
       db.collection('restaurant').doc('mainData').get().then((doc) => {
         if (doc.exists) {
           const d = doc.data();
@@ -523,6 +526,34 @@
         setupMenuTabs();
         setupAdminTabs();
         updateCartButtonCount();
+      });
+
+      // Add real-time Firestore listener to auto-sync across devices!
+      db.collection('restaurant').doc('mainData').onSnapshot((doc) => {
+        if (doc.exists) {
+          const d = doc.data();
+          // Only update if there are actual changes
+          let hasChanges = false;
+          for (let k in initialData) {
+            if (d[k] && JSON.stringify(data[k]) !== JSON.stringify(d[k])) {
+              data[k] = d[k];
+              hasChanges = true;
+            }
+          }
+          if (!Array.isArray(data.orders)) data.orders = [];
+          if (!Array.isArray(data.messages)) data.messages = [];
+
+          if (hasChanges) {
+            // Save to localStorage and re-render UI
+            localStorage.setItem('dawatData', JSON.stringify(data));
+            renderPackages();
+            renderMenu('All');
+            renderChefs();
+            renderNews();
+            renderGallery();
+            console.log("🔄 Real-time data sync complete!");
+          }
+        }
       });
 
       document.getElementById('contact-form').addEventListener('submit', handleContactSubmit);
@@ -1326,7 +1357,18 @@
       const newItem = { id:Date.now() };
       (fields[currentAdminTab]||[]).forEach(f => {
         const el = document.getElementById(`form-${f}`);
-        if (el) newItem[f] = el.type==='number' ? Number(el.value) : el.value;
+        if (el) {
+          if (el.type==='number') {
+            newItem[f] = Number(el.value);
+          } else {
+            let value = el.value.trim(); // Trim all string inputs to fix mobile copy-paste issues!
+            // Auto-add https:// if missing for image fields
+            if (f === 'image' && value && !value.startsWith('http://') && !value.startsWith('https://')) {
+              value = 'https://' + value;
+            }
+            newItem[f] = value;
+          }
+        }
       });
       if (currentAdminTab === 'menu') {
         data.menuItems.push(newItem);
