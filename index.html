@@ -806,1762 +806,797 @@
 
   <div id="toast-container" class="toast-container"></div>
 
-  <script>
+ <script>
 
     // Custom Toast Notification System
-
     function showToast(msg) {
-
       const container = document.getElementById('toast-container');
-
       if (!container) return;
-
       const toast = document.createElement('div');
-
       toast.className = 'toast';
-
       toast.innerHTML = `<svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg> <span>${msg}</span>`;
-
       container.appendChild(toast);
-
       setTimeout(() => { 
-
         toast.style.animation = window.innerWidth <= 500 ? 'toastOutMobile 0.3s forwards' : 'toastOut 0.3s forwards'; 
-
         setTimeout(() => toast.remove(), 300); 
-
       }, 3500);
-
     };
-
-
 
     // ----- FIREBASE CONFIG -----
-
     const firebaseConfig = {
-
       apiKey: "AIzaSyD4XpW0D-EBA5EecCniJrwDyr_Zk37QgXg",
-
       authDomain: "project2-144f2.firebaseapp.com",
-
       projectId: "project2-144f2",
-
       storageBucket: "project2-144f2.firebasestorage.app",
-
       messagingSenderId: "1079597329153",
-
       appId: "1:1079597329153:web:1254e1880a963c23b6c900"
-
     };
-
-
 
     // Initialize Firebase
-
     firebase.initializeApp(firebaseConfig);
-
     const auth = firebase.auth();
-
     const db = firebase.firestore();
 
-
-
     // ----- DATA & STORAGE -----
-
     const initialData = {
-
       menuItems: [
-
         { id:1, name:"Margherita Pizza", category:"Pizza", price:299, description:"Classic tomato, mozzarella, and basil", image:"https://images.unsplash.com/photo-1574071318508-1cdbab80d002?q=80&w=600&auto=format&fit=crop", tag:"Hot" },
-
         { id:2, name:"Pepperoni Pizza", category:"Pizza", price:349, description:"Loaded with pepperoni and cheese", image:"https://images.unsplash.com/photo-1628840042765-356cda07504e?q=80&w=600&auto=format&fit=crop", tag:"New" },
-
         { id:3, name:"BBQ Chicken Burger", category:"Burger", price:199, description:"Grilled chicken with BBQ sauce", image:"https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=600&auto=format&fit=crop", tag:"" },
-
         { id:4, name:"Classic Beef Burger", category:"Burger", price:179, description:"Juicy beef patty with fresh veggies", image:"https://images.unsplash.com/photo-1586190848861-99aa4a171e90?q=80&w=600&auto=format&fit=crop", tag:"Hot" },
-
         { id:5, name:"Spaghetti Carbonara", category:"Pasta", price:249, description:"Creamy pasta with bacon", image:"https://images.unsplash.com/photo-1612874742237-6526221588e3?q=80&w=600&auto=format&fit=crop", tag:"" },
-
         { id:6, name:"Caesar Salad", category:"Salad", price:149, description:"Fresh romaine with parmesan", image:"https://images.unsplash.com/photo-1546793665-c74683f339c1?q=80&w=600&auto=format&fit=crop", tag:"New" },
-
         { id:7, name:"Chocolate Lava Cake", category:"Dessert", price:129, description:"Warm chocolate center", image:"https://images.unsplash.com/photo-1624353365286-3f8d62daad51?q=80&w=600&auto=format&fit=crop", tag:"Hot" },
-
         { id:8, name:"Tiramisu", category:"Dessert", price:149, description:"Classic Italian dessert", image:"https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?q=80&w=600&auto=format&fit=crop", tag:"" }
-
       ],
-
       packages: [
-
         { id:1, name:"Family Combo", price:999, description:"2 Large Pizzas + 4 Drinks + Fries", image:"https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=600" },
-
         { id:2, name:"Party Pack", price:1499, description:"3 Pizzas + 6 Drinks + Garlic Bread", image:"https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=600" },
-
         { id:3, name:"Kids Special", price:499, description:"1 Medium Pizza + Juice + Toy", image:"https://images.unsplash.com/photo-1628840042765-356cda07504e?w=600" }
-
       ],
-
       chefs: [
-
         { id:1, name:"Marco Rossi", description:"Head Chef with 15 years experience", image:"https://images.unsplash.com/photo-1577219491135-ce391730fb2c?w=400" },
-
         { id:2, name:"Sofia Martinez", description:"Pastry Specialist", image:"https://images.unsplash.com/photo-1583394838336-acd977736f90?w=400" },
-
         { id:3, name:"Ahmed Khan", description:"Grill Master", image:"https://images.unsplash.com/photo-1600565193348-f74bd3c7ccdf?w=400" },
-
         { id:4, name:"Yuki Tanaka", description:"Sushi & Asian Cuisine", image:"https://images.unsplash.com/photo-1581299894007-aaa50297cf16?w=400" }
-
       ],
-
       news: [
-
         { id:1, title:"New Summer Menu Launch", excerpt:"Introducing our refreshing summer specials with seasonal ingredients.", image:"https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400", date:"2024-06-15" },
-
         { id:2, title:"Pizza Festival Week", excerpt:"Join us for a week of pizza celebrations with special discounts.", image:"https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400", date:"2024-06-10" },
-
         { id:3, title:"Award Winning Chefs", excerpt:"Our head chef Marco Rossi wins the Golden Chef Award 2024.", image:"https://images.unsplash.com/photo-1577219491135-ce391730fb2c?w=400", date:"2024-06-05" }
-
       ],
-
       gallery: [
-
         { id:1, image:"https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=600&auto=format&fit=crop" },
-
         { id:2, image:"https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?q=80&w=600&auto=format&fit=crop" },
-
         { id:3, image:"https://images.unsplash.com/photo-1574071318508-1cdbab80d002?q=80&w=600&auto=format&fit=crop" },
-
         { id:4, image:"https://images.unsplash.com/photo-1604382355076-af4b0eb60143?q=80&w=600&auto=format&fit=crop" },
-
         { id:5, image:"https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=600&auto=format&fit=crop" },
-
         { id:6, image:"https://images.unsplash.com/photo-1546793665-c74683f339c1?q=80&w=600&auto=format&fit=crop" }
-
       ],
-
       orders: [],
-
       messages: []
-
     };
 
-
-
     // Initialize data from localStorage as fallback, but will be overridden by Firestore
-
     let data = JSON.parse(localStorage.getItem('dawatData')) || JSON.parse(JSON.stringify(initialData));
 
-
-
     function saveData() {
-
       // Always save to localStorage first for instant access
-
       localStorage.setItem('dawatData', JSON.stringify(data));
-
       // Then save to Firestore asynchronously
-
       db.collection('restaurant').doc('mainData').set(data).then(() => {
-
         console.log("✅ Data saved to Firestore and localStorage successfully!");
-
       }).catch((e) => {
-
         console.error("❌ Error saving data to Firestore:", e);
-
       });
-
     }
 
-
-
     let currentPackageIndex = 0;
-
     let currentAdminTab = 'menu';
-
     let cart = JSON.parse(localStorage.getItem('dawatCart') || '[]');
-
     let isLoginMode = true;
-
     let isAdmin = false;
-
     let currentUser = null;
 
-
-
     // ----- DOM REFS -----
-
     const navLinks = document.getElementById('navLinks');
-
     const navButtons = document.getElementById('navButtons');
-
     const adminBtn = document.getElementById('admin-btn');
 
-
-
     // ----- INIT -----
-
     document.addEventListener('DOMContentLoaded', function() {
-
       // First get initial data from Firestore to ensure latest data is loaded
-
       db.collection('restaurant').doc('mainData').get().then((doc) => {
-
         if (doc.exists) {
-
           const d = doc.data();
-
           // Update all data from Firestore to ensure mobile gets latest data
-
           for (let k in initialData) {
-
             if (d[k]) {
-
               data[k] = d[k];
-
             }
-
           }
-
           if (!Array.isArray(data.orders)) data.orders = [];
-
           if (!Array.isArray(data.messages)) data.messages = [];
-
           // Save to localStorage to keep it in sync
-
           localStorage.setItem('dawatData', JSON.stringify(data));
-
         } else {
-
           saveData();
-
         }
-
         renderPackages();
-
         renderMenu('All');
-
         renderChefs();
-
         renderNews();
-
         renderGallery();
-
         setupMenuTabs();
-
         setupAdminTabs();
-
         updateCartButtonCount();
-
       });
-
-
 
       // Add real-time Firestore listener to auto-sync across devices!
-
       db.collection('restaurant').doc('mainData').onSnapshot((doc) => {
-
         if (doc.exists) {
-
           const d = doc.data();
-
           // Always update all data from Firestore to ensure mobile gets latest changes
-
           let hasChanges = false;
-
           for (let k in initialData) {
-
             if (d[k] && JSON.stringify(data[k]) !== JSON.stringify(d[k])) {
-
               data[k] = d[k];
-
               hasChanges = true;
-
             }
-
           }
-
           if (!Array.isArray(data.orders)) data.orders = [];
-
           if (!Array.isArray(data.messages)) data.messages = [];
 
-
-
           // Always save to localStorage and re-render to ensure mobile shows latest data
-
           localStorage.setItem('dawatData', JSON.stringify(data));
-
           renderPackages();
-
           renderMenu('All');
-
           renderChefs();
-
           renderNews();
-
           renderGallery();
-
           console.log("🔄 Real-time data sync complete!");
-
         }
-
       });
-
-
 
       document.getElementById('contact-form').addEventListener('submit', handleContactSubmit);
-
       // Setup Firebase Google sign-in button
-
       setupFirebaseGoogleSignIn();
 
-
-
       // Initialize GSAP Animations
-
       setupGSAPAnimations();
 
-
-
       // Restore session from localStorage immediately on load
-
       const storedSession = JSON.parse(localStorage.getItem('dawatAdminSession') || 'null');
-
       if (storedSession && storedSession.loggedIn) {
-
         currentUser = storedSession;
-
         isAdmin = (storedSession.email === 'khalidmkhalid.com.pk@gmail.com');
-
       }
-
       updateAuthUI(); // render correct buttons immediately
 
-
-
       // Firebase auth state (handles Google + email/password Firebase logins)
-
       auth.onAuthStateChanged(user => {
-
         if (user) {
-
           currentUser = user;
-
           isAdmin = (user.email === 'khalidmkhalid.com.pk@gmail.com');
-
           localStorage.setItem('dawatAdminSession', JSON.stringify({ email: user.email, loggedIn: true }));
-
           // Coming back from Google redirect?
-
           const pendingRedirect = sessionStorage.getItem('googleRedirectPending');
-
           if (pendingRedirect) {
-
             sessionStorage.removeItem('googleRedirectPending');
-
             closeAuthModal();
-
             showToast('Google Sign-In successful! Welcome, ' + (user.displayName || user.email));
-
             if (isAdmin) openAdminPanel();
-
           }
-
         } else {
-
           // Clear everything
-
           localStorage.removeItem('dawatAdminSession');
-
           isAdmin = false;
-
           currentUser = null;
-
         }
-
         updateAuthUI();
-
       });
-
-
 
     });
 
-
-
     // ----- NAV / MOBILE -----
-
     function toggleMobileMenu() {
-
       const navMenu = document.getElementById('navMenu');
-
       const menuBtn = document.getElementById('mobileMenuBtn');
-
       navMenu.classList.toggle('active');
-
       menuBtn.classList.toggle('active');
-
       document.body.classList.toggle('menu-open');
-
     }
 
     function closeMobileMenu() {
-
       const navMenu = document.getElementById('navMenu');
-
       const menuBtn = document.getElementById('mobileMenuBtn');
-
       navMenu.classList.remove('active');
-
       menuBtn.classList.remove('active');
-
       document.body.classList.remove('menu-open');
-
     }
 
     document.querySelectorAll('.nav-links a').forEach(a => a.addEventListener('click', closeMobileMenu));
 
-
-
     function scrollToSection(id) {
-
       document.getElementById(id)?.scrollIntoView({ behavior:'smooth' });
-
       closeMobileMenu();
-
     }
 
-
-
     // ----- PACKAGE SLIDER -----
-
     function renderPackages() {
-
       const pkg = data.packages[currentPackageIndex] || data.packages[0];
-
       document.getElementById('package-img').src = pkg.image;
-
       document.getElementById('package-name').textContent = pkg.name;
-
       document.getElementById('package-description').textContent = pkg.description;
-
       document.getElementById('package-price').textContent = `₹${pkg.price}`;
-
       const dots = document.getElementById('package-dots');
-
       dots.innerHTML = '';
-
       data.packages.forEach((_, i) => {
-
         const dot = document.createElement('div');
-
         dot.className = `dot ${i===currentPackageIndex?'active':''}`;
-
         dot.onclick = ()=>{ currentPackageIndex=i; renderPackages(); };
-
         dots.appendChild(dot);
-
       });
-
     }
 
     function nextPackage() { currentPackageIndex = (currentPackageIndex+1)%data.packages.length; renderPackages(); }
-
     function prevPackage() { currentPackageIndex = (currentPackageIndex-1+data.packages.length)%data.packages.length; renderPackages(); }
 
     function addPackageToCart() {
-
       const pkg = data.packages[currentPackageIndex];
-
       if (!pkg) return;
-
       const cid = 10000+pkg.id;
-
       const existing = cart.find(i=>i.id===cid);
-
       if (existing) existing.quantity++;
-
       else cart.push({ id:cid, name:pkg.name, price:Number(pkg.price), description:pkg.description, image:pkg.image, category:'Package', quantity:1 });
-
       saveCart(); updateCartButtonCount(); showToast(`${pkg.name} added to cart!`);
-
     }
 
-
-
     // ----- MENU -----
-
     function renderMenu(category) {
-
       const grid = document.getElementById('menu-grid');
-
       grid.innerHTML = '';
-
       const items = category==='All' ? data.menuItems : data.menuItems.filter(i=>i.category===category);
-
       items.forEach(item => {
-
         const div = document.createElement('div');
-
         div.className = 'menu-item';
-
         div.innerHTML = `
-
           <div class="menu-item-img"><img src="${item.image}" alt="${item.name}" onerror="this.src='https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=400'">${item.tag ? `<span class="menu-tag ${item.tag.toLowerCase()}">${item.tag}</span>` : ''}</div>
-
           <div class="menu-item-content"><h3>${item.name}</h3><p>${item.description}</p><div class="menu-item-footer"><span class="menu-price">₹${item.price}</span><button class="btn btn-secondary" onclick="addToCart(${item.id})">Add to Cart</button></div></div>
-
         `;
-
         grid.appendChild(div);
-
       });
-
     }
 
     function setupMenuTabs() {
-
       document.querySelectorAll('.menu-tabs .tab-btn').forEach(btn => {
-
         btn.addEventListener('click', function() {
-
           document.querySelectorAll('.menu-tabs .tab-btn').forEach(b=>b.classList.remove('active'));
-
           this.classList.add('active');
-
           renderMenu(this.dataset.tab);
-
         });
-
       });
-
     }
 
-
-
     // ----- CHEFS / NEWS / GALLERY -----
-
     function renderChefs() {
-
       const grid = document.getElementById('chefs-grid');
-
       grid.innerHTML = '';
-
       data.chefs.forEach(c => {
-
         const div = document.createElement('div');
-
         div.className = 'chef-card';
-
         div.innerHTML = `<div class="chef-img"><img src="${c.image}" alt="${c.name}" onerror="this.src='https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=400'"></div><div class="chef-info"><h3>${c.name}</h3><p>${c.description}</p></div>`;
-
         grid.appendChild(div);
-
       });
-
     }
 
     function renderNews() {
-
       const grid = document.getElementById('news-grid');
-
       grid.innerHTML = '';
-
       data.news.forEach(n => {
-
         const div = document.createElement('div');
-
         div.className = 'news-card';
-
         div.innerHTML = `<div class="news-img"><img src="${n.image}" alt="${n.title}" onerror="this.src='https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400'"></div><div class="news-content"><p class="news-date">${n.date}</p><h3>${n.title}</h3><p>${n.excerpt}</p><a href="#">Read More →</a></div>`;
-
         grid.appendChild(div);
-
       });
-
     }
 
     function renderGallery() {
-
       const grid = document.getElementById('gallery-grid');
-
       grid.innerHTML = '';
-
       data.gallery.forEach(g => {
-
         const div = document.createElement('div');
-
         div.className = 'gallery-item';
-
         div.innerHTML = `<img src="${g.image}" alt="Gallery" onerror="this.src='https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400'">`;
-
         grid.appendChild(div);
-
       });
-
     }
 
-
-
     // ----- CART -----
-
     function addToCart(itemId) {
-
       const item = data.menuItems.find(i=>i.id===itemId);
-
       if (!item) return;
-
       const existing = cart.find(i=>i.id===itemId);
-
       if (existing) existing.quantity++;
-
       else cart.push({ ...item, quantity:1 });
-
       saveCart(); updateCartButtonCount(); showToast(`${item.name} added to cart!`);
-
     }
 
     function saveCart() { localStorage.setItem('dawatCart', JSON.stringify(cart)); }
 
     function updateCartButtonCount() {
-
       const total = cart.reduce((s,i)=>s+i.quantity,0);
-
       document.getElementById('cart-count').textContent = total;
-
     }
 
     function openCartModal() { document.getElementById('cart-modal').classList.add('active'); renderCart(); }
-
     function closeCartModal() { document.getElementById('cart-modal').classList.remove('active'); }
 
     function renderCart() {
-
       const container = document.getElementById('cart-items');
-
       const totalEl = document.getElementById('cart-total');
-
       if (cart.length===0) { container.innerHTML = '<div class="cart-empty">Your cart is empty</div>'; totalEl.textContent='0'; return; }
-
       container.innerHTML = cart.map(item => `
-
         <div class="cart-item">
-
           <img src="${item.image}" alt="${item.name}" onerror="this.src='https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=400'">
-
           <div class="cart-item-info"><h4>${item.name}</h4><p>₹${item.price}</p></div>
-
           <div class="cart-item-quantity"><button onclick="updateQuantity(${item.id},-1)">-</button><span>${item.quantity}</span><button onclick="updateQuantity(${item.id},1)">+</button></div>
-
           <button class="cart-item-remove" onclick="removeFromCart(${item.id})">×</button>
-
         </div>
-
       `).join('');
-
       const total = cart.reduce((s,i)=>s + Number(i.price)*i.quantity,0);
-
       totalEl.textContent = total;
-
     }
 
     function updateQuantity(id, change) {
-
       const item = cart.find(i=>i.id===id);
-
       if (!item) return;
-
       item.quantity += change;
-
       if (item.quantity <=0) removeFromCart(id);
-
       else { saveCart(); updateCartButtonCount(); renderCart(); }
-
     }
 
     function removeFromCart(id) { cart = cart.filter(i=>i.id!==id); saveCart(); updateCartButtonCount(); renderCart(); }
 
-
-
     // ----- CHECKOUT -----
-
     function openCheckoutModal() {
-
       if (cart.length===0) { showToast('Your cart is empty!'); return; }
-
       closeCartModal();
-
       document.getElementById('checkout-modal').classList.add('active');
-
       renderCheckoutSummary();
-
     }
 
     function closeCheckoutModal() { document.getElementById('checkout-modal').classList.remove('active'); }
 
     function renderCheckoutSummary() {
-
       const container = document.getElementById('checkout-items');
-
       const totalEl = document.getElementById('checkout-total');
-
       container.innerHTML = cart.map(item => `<div class="checkout-item"><span class="checkout-item-name">${item.name} x ${item.quantity}</span><span class="checkout-item-price">₹${Number(item.price)*item.quantity}</span></div>`).join('');
-
       const total = cart.reduce((s,i)=>s+Number(i.price)*i.quantity,0);
-
       totalEl.textContent = total;
-
     }
 
     function handleCheckout() {
-
       const name = document.getElementById('checkout-name').value.trim();
-
       const phone = document.getElementById('checkout-phone').value.trim();
-
       const address = document.getElementById('checkout-address').value.trim();
-
       const notes = document.getElementById('checkout-notes').value.trim();
-
       if (!name || !phone || !address) { showToast('Please fill in all required fields!'); return; }
-
       const total = cart.reduce((s,i)=>s+Number(i.price)*i.quantity,0);
-
       data.orders.unshift({ id:Date.now(), name, phone, address, notes, items:[...cart], total, status:'Pending', date:new Date().toISOString() });
-
       saveData();
-
       cart = []; saveCart(); updateCartButtonCount();
-
       closeCheckoutModal();
-
       document.getElementById('checkout-name').value=''; document.getElementById('checkout-phone').value=''; document.getElementById('checkout-address').value=''; document.getElementById('checkout-notes').value='';
-
       showToast('Order placed successfully! Check Admin Panel > Orders to view it.');
-
     }
-
-
 
     // ----- CONTACT FORM -----
-
     function handleContactSubmit(e) {
-
       e.preventDefault();
-
       const name = document.getElementById('contact-name').value;
-
       const email = document.getElementById('contact-email').value;
-
       const message = document.getElementById('contact-message').value;
-
       const success = document.getElementById('contact-success');
-
       success.style.display = 'flex';
-
       setTimeout(()=>success.style.display='none', 4000);
-
       data.messages.push({ id:Date.now(), name, email, message, date:new Date().toISOString() });
-
       saveData();
-
       document.getElementById('contact-form').reset();
-
     }
 
-
-
     // ----- AUTH (Firebase + hardcoded admin) -----
-
     function openAuthModal() { document.getElementById('auth-modal').classList.add('active'); document.getElementById('auth-error').classList.remove('show'); }
-
     function closeAuthModal() { document.getElementById('auth-modal').classList.remove('active'); document.getElementById('auth-email').value=''; document.getElementById('auth-password').value=''; }
 
     function toggleAuthMode() {
-
       isLoginMode = !isLoginMode;
-
       document.getElementById('auth-title').textContent = isLoginMode ? 'Login' : 'Sign Up';
-
       document.getElementById('auth-submit-btn').textContent = isLoginMode ? 'Login' : 'Sign Up';
-
       document.getElementById('auth-toggle-text').textContent = isLoginMode ? "Don't have an account?" : 'Already have an account?';
-
       document.getElementById('auth-toggle-btn').textContent = isLoginMode ? 'Sign up' : 'Login';
-
       document.getElementById('auth-error').classList.remove('show');
-
     }
-
-
 
     function handleEmailAuth() {
-
       const email = document.getElementById('auth-email').value.trim();
-
       const password = document.getElementById('auth-password').value.trim();
-
       const errorEl = document.getElementById('auth-error');
-
       if (!email || !password) { errorEl.textContent='Please fill in both fields.'; errorEl.classList.add('show'); return; }
 
-
-
       // ---- Hardcoded admin login (always works, no Firebase needed) ----
-
       if (email === 'khalidmkhalid.com.pk@gmail.com' && password === '123456') {
-
         currentUser = { email: email };
-
         isAdmin = true;
-
         localStorage.setItem('dawatAdminSession', JSON.stringify({ email: email, loggedIn: true }));
-
         closeAuthModal();
-
         updateAuthUI();
-
         showToast('✅ Welcome Admin! Logged in successfully.');
-
         openAdminPanel();
-
         return;
-
       }
 
-
-
       // ---- Firebase login for regular users ----
-
       const submitBtn = document.getElementById('auth-submit-btn');
-
       submitBtn.disabled = true;
-
       submitBtn.textContent = isLoginMode ? 'Logging in...' : 'Creating account...';
 
-
-
       const authPromise = isLoginMode
-
         ? auth.signInWithEmailAndPassword(email, password)
-
         : auth.createUserWithEmailAndPassword(email, password);
 
-
-
       authPromise
-
         .then(userCredential => {
-
           const user = userCredential.user;
-
           currentUser = user;
-
           isAdmin = (user.email === 'khalidmkhalid.com.pk@gmail.com');
-
           localStorage.setItem('dawatAdminSession', JSON.stringify({ email: user.email, loggedIn: true }));
-
           closeAuthModal();
-
           updateAuthUI();
-
           showToast(isLoginMode ? '✅ Logged in successfully!' : '✅ Account created! Welcome!');
-
           if (isAdmin) openAdminPanel();
-
         })
-
         .catch(error => {
-
           errorEl.textContent = getFriendlyAuthError(error.code, error.message);
-
           errorEl.classList.add('show');
-
         })
-
         .finally(() => {
-
           submitBtn.disabled = false;
-
           submitBtn.textContent = isLoginMode ? 'Login' : 'Sign Up';
-
         });
-
     }
-
-
 
     function isAnyUserLoggedIn() {
-
       const session = JSON.parse(localStorage.getItem('dawatAdminSession') || 'null');
-
       return (session && session.loggedIn) || (currentUser !== null) || isAdmin;
-
     }
-
-
 
     function isAdminLoggedIn() {
-
       const session = JSON.parse(localStorage.getItem('dawatAdminSession') || 'null');
-
       return session && session.loggedIn && session.email === 'khalidmkhalid.com.pk@gmail.com';
-
     }
-
-
 
     function handleLogout() {
-
       // Always clear local session regardless of Firebase state
-
       localStorage.removeItem('dawatAdminSession');
-
       isAdmin = false;
-
       currentUser = null;
-
       closeAdminPanel();
-
       updateAuthUI();
-
       showToast('👋 Logged out successfully.');
-
       // Also sign out from Firebase (for Google/email users)
-
       auth.signOut().catch(() => {}); // silent - already cleared locally
-
     }
 
-
-
     function updateAuthUI() {
-
       const loggedIn = isAnyUserLoggedIn();
 
-
-
       // Clean up any previously injected buttons
-
       ['logout-nav-btn', 'admin-panel-nav-btn', 'user-email-display', 'profile-dropdown-widget'].forEach(id => {
-
         const el = document.getElementById(id);
-
         if (el) el.remove();
-
       });
-
-
 
       const navButtonsEl = document.querySelector('.nav-buttons');
 
-
-
       if (loggedIn) {
-
         // ---- Logged in state ----
-
         const adminBtn = document.getElementById('admin-btn');
-
         adminBtn.style.display = 'none'; // hide generic login button
 
-
-
         const profileDropdown = document.createElement('div');
-
         profileDropdown.className = 'profile-dropdown';
-
         profileDropdown.id = 'profile-dropdown-widget';
 
-
-
         let displayEmail = 'User';
-
         const session = JSON.parse(localStorage.getItem('dawatAdminSession') || 'null');
-
         if (currentUser && currentUser.email) {
-
           displayEmail = currentUser.email;
-
         } else if (session && session.email) {
-
           displayEmail = session.email;
-
         } else if (isAdminLoggedIn()) {
-
           displayEmail = 'khalidmkhalid.com.pk@gmail.com';
-
         }
-
-
 
         const toggleBtn = document.createElement('button');
-
         toggleBtn.className = 'profile-toggle';
-
         toggleBtn.innerHTML = `
-
           <svg style="width:16px;height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg> Profile 
-
           <svg style="width:14px;height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
-
         `;
 
-        
-
         const menuEl = document.createElement('div');
-
         menuEl.className = 'profile-menu';
 
-
-
         const emailDisplay = document.createElement('div');
-
         emailDisplay.id = 'user-email-display';
-
         emailDisplay.innerHTML = `<strong>Logged in as:</strong><br>${displayEmail}`;
-
         menuEl.appendChild(emailDisplay);
 
-
-
         if (isAdmin || isAdminLoggedIn()) {
-
           isAdmin = true;
-
           const panelBtn = document.createElement('button');
-
           panelBtn.className = 'btn btn-primary';
-
           panelBtn.textContent = 'ADMIN PANEL';
-
           panelBtn.onclick = openAdminPanel;
-
           menuEl.appendChild(panelBtn);
-
         }
 
-
-
         const logoutBtn = document.createElement('button');
-
         logoutBtn.className = 'btn btn-secondary';
-
         logoutBtn.textContent = 'LOGOUT';
-
         logoutBtn.onclick = handleLogout;
-
         menuEl.appendChild(logoutBtn);
 
-
-
         profileDropdown.appendChild(toggleBtn);
-
         profileDropdown.appendChild(menuEl);
 
-
-
         toggleBtn.onclick = (e) => {
-
           e.stopPropagation();
-
           menuEl.classList.toggle('show');
-
         };
 
-
-
         document.addEventListener('click', (e) => {
-
           if (!profileDropdown.contains(e.target)) {
-
             menuEl.classList.remove('show');
-
           }
-
         });
 
-
-
         navButtonsEl.appendChild(profileDropdown);
-
       } else {
-
         // ---- Logged out state ----
-
         const adminBtn = document.getElementById('admin-btn');
-
         adminBtn.style.display = 'inline-flex';
-
         adminBtn.textContent = 'LOGIN';
-
         adminBtn.className = 'btn btn-primary';
-
         adminBtn.onclick = openAuthModal;
-
       }
-
     }
-
-
 
     // ----- Friendly Firebase error messages -----
-
     function getFriendlyAuthError(code, fallback) {
-
       const map = {
-
         'auth/popup-closed-by-user':      'Sign-in was cancelled. Please try again.',
-
         'auth/popup-blocked':             'Popup was blocked by your browser. Redirecting to Google...',
-
         'auth/cancelled-popup-request':   'Another sign-in is already in progress.',
-
         'auth/network-request-failed':    'Network error. Please check your internet connection.',
-
         'auth/user-disabled':             'This account has been disabled. Contact support.',
-
         'auth/account-exists-with-different-credential': 'An account already exists with this email using a different sign-in method.',
-
         'auth/unauthorized-domain':       'This domain is not authorized. Add it to Firebase Console → Authentication → Authorized Domains.',
-
         'auth/operation-not-allowed':     'Google Sign-In is not enabled. Enable it in Firebase Console → Authentication → Sign-in methods.',
-
         'auth/user-not-found':            'No account found. Please sign up first.',
-
         'auth/wrong-password':            'Incorrect password. Please try again.',
-
         'auth/email-already-in-use':      'This email is already registered. Please log in instead.',
-
         'auth/weak-password':             'Password must be at least 6 characters.',
-
         'auth/invalid-email':             'Please enter a valid email address.',
-
         'auth/too-many-requests':         'Too many attempts. Please wait a moment and try again.',
-
       };
-
       return map[code] || fallback || 'An error occurred. Please try again.';
-
     }
 
-
-
     // ----- Firebase Google Sign-In (universal: works on all devices) -----
-
     function setupFirebaseGoogleSignIn() {
-
       const container = document.getElementById('google-signin-container');
-
       if (!container) return;
 
-
-
       let provider;
-
       try {
-
         provider = new firebase.auth.GoogleAuthProvider();
-
         provider.addScope('email');
-
         provider.addScope('profile');
-
         // Force Google to always show account chooser
-
         provider.setCustomParameters({ prompt: 'select_account' });
-
       } catch (e) {
-
         container.innerHTML = '<p style="color:#999;font-size:13px;text-align:center;">Google Sign-In unavailable. Use email/password below.</p>';
-
         return;
-
       }
 
-
-
       // ---- Divider ----
-
       const divider = document.createElement('div');
-
       divider.style.cssText = 'display:flex;align-items:center;gap:10px;margin:8px 0;';
-
       divider.innerHTML = '<hr style="flex:1;border:none;border-top:1px solid #ddd;"><span style="color:#999;font-size:13px;white-space:nowrap;">or sign in with</span><hr style="flex:1;border:none;border-top:1px solid #ddd;">';
-
       container.appendChild(divider);
 
-
-
       // ---- Google Button ----
-
       const btn = document.createElement('button');
-
       btn.id = 'google-signin-btn';
-
       btn.type = 'button';
-
       btn.style.cssText = 'display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:11px 16px;background:#fff;color:#333;border:1.5px solid #ddd;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;transition:box-shadow 0.2s,border-color 0.2s;';
-
       btn.innerHTML = `
-
         <svg width="20" height="20" viewBox="0 0 48 48">
-
           <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-
           <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-
           <path fill="#FBBC05" d="M10.53 28.59A14.5 14.5 0 0 1 9.5 24c0-1.59.28-3.14.76-4.59l-7.98-6.19A23.99 23.99 0 0 0 0 24c0 3.77.87 7.35 2.56 10.56l7.97-5.97z"/>
-
           <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 5.97C6.51 42.62 14.62 48 24 48z"/>
-
         </svg>
-
         Continue with Google
-
       `;
 
       btn.onmouseover = () => { btn.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)'; btn.style.borderColor = '#aaa'; };
-
       btn.onmouseout  = () => { btn.style.boxShadow = 'none'; btn.style.borderColor = '#ddd'; };
 
-
-
       btn.onclick = function() {
-
         const errorEl = document.getElementById('auth-error');
-
         if (errorEl) { errorEl.classList.remove('show'); errorEl.textContent = ''; }
 
-
-
         // Show loading state on button
-
         btn.disabled = true;
-
         btn.innerHTML = '<span style="display:inline-block;width:18px;height:18px;border:2px solid #ddd;border-top-color:#e63946;border-radius:50%;animation:spin 0.7s linear infinite;"></span>&nbsp;Connecting to Google...';
 
-
-
         // Use signInWithPopup instead of redirect so it works locally on file:// protocol
-
         auth.signInWithPopup(provider).then((result) => {
-
           closeAuthModal();
-
           showToast('Google Sign-In successful! Welcome, ' + (result.user.displayName || result.user.email));
-
           if (isAdminLoggedIn()) openAdminPanel();
-
         }).catch(function(error) {
-
           btn.disabled = false;
-
           btn.innerHTML = `<svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59A14.5 14.5 0 0 1 9.5 24c0-1.59.28-3.14.76-4.59l-7.98-6.19A23.99 23.99 0 0 0 0 24c0 3.77.87 7.35 2.56 10.56l7.97-5.97z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 5.97C6.51 42.62 14.62 48 24 48z"/></svg> Continue with Google`;
-
           if (errorEl && error.code !== 'auth/popup-closed-by-user') {
-
             errorEl.textContent = getFriendlyAuthError(error.code, error.message);
-
             errorEl.classList.add('show');
-
           }
-
         });
-
       };
 
-
-
       container.appendChild(btn);
-
     }
-
-
 
     // ----- PREMIUM GSAP ANIMATIONS -----
-
-    /**
-
-     * Helper function to check if user prefers reduced motion
-
-     */
-
     function prefersReducedMotion() {
-
       return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
     }
 
-
-
-    /**
-
-     * Initialize all premium animations
-
-     */
-
     function setupGSAPAnimations() {
-
       if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') return;
-
       if (prefersReducedMotion()) return;
-
-
 
       gsap.registerPlugin(ScrollTrigger);
 
-
-
-      // --- PAGE LOADER ANIMATION ---
-
       const loader = document.getElementById('page-loader');
-
       const loaderDelay = loader ? 2.3 : 0;
 
-
-
       if (loader) {
-
         const loaderTL = gsap.timeline();
-
-        
-
-        // Animate loader text characters
-
         loaderTL.to('.loader-text-char', {
-
           y: 0,
-
           opacity: 1,
-
           duration: 0.06,
-
           stagger: 0.04,
-
           ease: 'power2.out'
-
         }, 0.2);
-
-
-
-        // Animate progress bar
-
         loaderTL.to('.loader-bar-fill', {
-
           width: '100%',
-
           duration: 1.4,
-
           ease: 'power2.inOut'
-
         }, 0.3);
-
-
-
-        // Hide loader
-
         loaderTL.to(loader, {
-
           opacity: 0,
-
           duration: 0.5,
-
           ease: 'power2.inOut',
-
           onComplete: () => {
-
             loader.classList.add('hidden');
-
           }
-
         }, '+=0.2');
-
       }
-
-
-
-      // --- 1. HERO SECTION ANIMATIONS ---
 
       const heroContent = document.querySelector('.hero-content');
-
       if (heroContent) {
-
-        // Fade in entire hero content with slight upward movement
-
-        gsap.fromTo(heroContent, 
-
-          { y: 24, opacity: 0 }, 
-
-          { y: 0, opacity: 1, duration: 1, ease: 'power3.out', delay: loaderDelay }
-
-        );
-
-
-
-        // Stagger children (headline first, then subtitle, then button)
-
-        gsap.fromTo(heroContent.children, 
-
-          { y: 12, opacity: 0 }, 
-
-          { y: 0, opacity: 1, duration: 0.8, stagger: 0.12, ease: 'power3.out', delay: loaderDelay + 0.2 }
-
-        );
-
+        gsap.fromTo(heroContent, { y: 24, opacity: 0 }, { y: 0, opacity: 1, duration: 1, ease: 'power3.out', delay: loaderDelay });
+        gsap.fromTo(heroContent.children, { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, stagger: 0.12, ease: 'power3.out', delay: loaderDelay + 0.2 });
       }
-
-
-
-      // Hero background parallax
 
       gsap.to('.hero-bg', {
-
         yPercent: 15,
-
         ease: 'none',
-
         scrollTrigger: {
-
           trigger: '.hero',
-
           start: 'top bottom',
-
           end: 'bottom top',
-
           scrub: 0.8
-
         }
-
       });
-
-
-
-      // --- 2. NAVIGATION BAR --- (No animations)
-
-
-
-      // --- 3. CARD ANIMATIONS (menu items, chef cards, news cards, gallery items) ---
 
       const cardSelectors = ['.menu-item', '.chef-card', '.news-card', '.gallery-item', '.story-card'];
-
-      
-
       cardSelectors.forEach(selector => {
-
         gsap.utils.toArray(selector).forEach((card) => {
-
-          gsap.fromTo(card, 
-
-            { y: 28, opacity: 0, scale: 0.98 }, 
-
-            { 
-
-              y: 0, 
-
-              opacity: 1, 
-
-              scale: 1, 
-
-              duration: 0.9, 
-
-              ease: 'power3.out',
-
-              scrollTrigger: {
-
-                trigger: card,
-
-                start: 'top 88%',
-
-                once: true
-
-              }
-
-            }
-
-          );
-
+          gsap.fromTo(card, { y: 28, opacity: 0, scale: 0.98 }, { 
+            y: 0, opacity: 1, scale: 1, duration: 0.9, ease: 'power3.out',
+            scrollTrigger: { trigger: card, start: 'top 88%', once: true }
+          });
         });
-
       });
-
-
-
-      // --- SPECIAL PACKAGES --- (No animations)
-
-
-
-      // --- 4. IMAGE ANIMATIONS ---
 
       const imageSelectors = [
-
-        '.menu-item-img img', 
-
-        '.chef-img img', 
-
-        '.news-img img', 
-
-        '.gallery-item img', 
-
-        '.package-image img',
-
-        '.signature-img img',
-
-        '.story-images img'
-
+        '.menu-item-img img', '.chef-img img', '.news-img img', 
+        '.gallery-item img', '.package-image img', '.signature-img img', '.story-images img'
       ];
-
-
-
       imageSelectors.forEach(selector => {
-
-        gsap.utils.toArray(selector).forEach(img => {
-
-        });
-
+        gsap.utils.toArray(selector).forEach(img => {});
       });
-
-
-
-      // --- 5. BUTTON HOVER ANIMATIONS ---
 
       document.querySelectorAll('.btn').forEach(btn => {
-
         btn.addEventListener('mouseenter', () => {
-
-          gsap.to(btn, {
-
-            scale: 1.02,
-
-            duration: 0.2,
-
-            ease: 'power2.out'
-
-          });
-
+          gsap.to(btn, { scale: 1.02, duration: 0.2, ease: 'power2.out' });
         });
-
-        
-
         btn.addEventListener('mouseleave', () => {
-
-          gsap.to(btn, {
-
-            scale: 1,
-
-            duration: 0.2,
-
-            ease: 'power2.out'
-
-          });
-
+          gsap.to(btn, { scale: 1, duration: 0.2, ease: 'power2.out' });
         });
-
       });
-
-
-
-      // --- 6. SECTION REVEAL ANIMATIONS ---
 
       const sections = gsap.utils.toArray('section');
-
       sections.forEach(section => {
-
-        // Skip hero and packages sections
-
         if (section.id === 'home' || section.classList.contains('packages')) return;
-
-        
-
-        gsap.fromTo(section, 
-
-          { y: 20, opacity: 0 }, 
-
-          { 
-
-            y: 0, 
-
-            opacity: 1, 
-
-            duration: 0.9, 
-
-            ease: 'power3.out',
-
-            scrollTrigger: {
-
-              trigger: section,
-
-              start: 'top 88%',
-
-              once: true
-
-            }
-
-          }
-
-        );
-
+        gsap.fromTo(section, { y: 20, opacity: 0 }, { 
+          y: 0, opacity: 1, duration: 0.9, ease: 'power3.out',
+          scrollTrigger: { trigger: section, start: 'top 88%', once: true }
+        });
       });
-
-
-
-      // --- 7. TEXT ANIMATIONS ---
-
-      // Animate section titles
 
       gsap.utils.toArray('.section-title').forEach(title => {
-
-        // Skip packages section title
-
         const parentSection = title.closest('section');
-
         if (parentSection && parentSection.classList.contains('packages')) return;
-
-
-
-        gsap.fromTo(title, 
-
-          { y: 24, opacity: 0 }, 
-
-          { 
-
-            y: 0, 
-
-            opacity: 1, 
-
-            duration: 0.9, 
-
-            ease: 'power3.out',
-
-            scrollTrigger: {
-
-              trigger: title,
-
-              start: 'top 90%',
-
-              once: true
-
-            }
-
-          }
-
-        );
-
+        gsap.fromTo(title, { y: 24, opacity: 0 }, { 
+          y: 0, opacity: 1, duration: 0.9, ease: 'power3.out',
+          scrollTrigger: { trigger: title, start: 'top 90%', once: true }
+        });
       });
-
-
-
-      // --- 8. FOOTER ANIMATION ---
 
       const footer = document.querySelector('.footer');
-
       if (footer) {
-
-        gsap.fromTo(footer, 
-
-          { y: 24, opacity: 0 }, 
-
-          { 
-
-            y: 0, 
-
-            opacity: 1, 
-
-            duration: 0.9, 
-
-            ease: 'power3.out',
-
-            scrollTrigger: {
-
-              trigger: footer,
-
-              start: 'top 88%',
-
-              once: true
-
-            }
-
-          }
-
-        );
-
+        gsap.fromTo(footer, { y: 24, opacity: 0 }, { 
+          y: 0, opacity: 1, duration: 0.9, ease: 'power3.out',
+          scrollTrigger: { trigger: footer, start: 'top 88%', once: true }
+        });
       }
 
-
-
-      // --- CARD HOVER EFFECTS (subtle, no bounce) ---
-
       document.addEventListener('mouseenter', (e) => {
-
         if (e.target.closest('.menu-item') || e.target.closest('.chef-card') || 
-
             e.target.closest('.news-card') || e.target.closest('.gallery-item')) {
-
           const item = e.target.closest('.menu-item, .chef-card, .news-card, .gallery-item');
-
-          gsap.to(item, {
-
-            y: -3,
-
-            duration: 0.25,
-
-            ease: 'power2.out'
-
-          });
-
+          gsap.to(item, { y: -3, duration: 0.25, ease: 'power2.out' });
         }
-
       }, true);
-
-
 
       document.addEventListener('mouseleave', (e) => {
-
         if (e.target.closest('.menu-item') || e.target.closest('.chef-card') || 
-
             e.target.closest('.news-card') || e.target.closest('.gallery-item')) {
-
           const item = e.target.closest('.menu-item, .chef-card, .news-card, .gallery-item');
-
-          gsap.to(item, {
-
-            y: 0,
-
-            duration: 0.25,
-
-            ease: 'power2.out'
-
-          });
-
+          gsap.to(item, { y: 0, duration: 0.25, ease: 'power2.out' });
         }
-
       }, true);
-
     }
 
-
-
     // ----- ADMIN PANEL -----
-
     function openAdminPanel() {
-
       if (!isAdminLoggedIn() && !isAdmin) { openAuthModal(); return; }
-
       document.getElementById('admin-modal').classList.add('active');
-
       db.collection('restaurant').doc('mainData').get().then((doc) => {
-
         if (doc.exists) {
-
           const d = doc.data();
-
           for (let k in initialData) if (d[k]) data[k] = d[k];
-
         }
-
         renderAdminList();
-
       });
-
     }
 
     function closeAdminPanel() { document.getElementById('admin-modal').classList.remove('active'); }
@@ -2569,135 +1604,75 @@
     function refreshData() {} // Replaced by inline get
 
     function setupAdminTabs() {
-
       document.querySelectorAll('.admin-tab').forEach(tab => {
-
         tab.addEventListener('click', function() {
-
           document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active'));
-
           this.classList.add('active');
-
           currentAdminTab = this.dataset.tab;
-
           renderAdminList();
-
         });
-
       });
-
     }
 
     function renderAdminList() {
-
       const list = document.getElementById('admin-list');
-
       const form = document.getElementById('admin-form');
-
       list.innerHTML = '';
 
       if (currentAdminTab === 'messages') {
-
         const msgs = data.messages || [];
-
         list.innerHTML = `<h3 style="margin-top:0;">Messages (${msgs.length})</h3>${msgs.length===0?'<p style="color:#666;">No messages.</p>':msgs.map(m=>`<div class="admin-item"><div><h4>${m.name}</h4><p>${m.email}</p><p style="font-size:13px;color:#666;">${m.message}</p><p style="font-size:12px;color:#999;">${new Date(m.date).toLocaleString()}</p></div><button class="delete-btn" onclick="deleteMessage(${m.id})">Delete</button></div>`).join('')}`;
-
         form.innerHTML = '';
-
         form.style.display = 'none';
-
         return;
-
       }
 
       if (currentAdminTab === 'orders') {
-
         const orders = data.orders || [];
-
         list.innerHTML = `<h3 style="margin-top:0;">Orders (${orders.length})</h3>${orders.length===0?'<p style="color:#666;">No orders.</p>':orders.map(o=>`
-
           <div class="admin-item order-card">
-
             <div class="order-header"><h4>Order #${o.id}</h4><p>${new Date(o.date).toLocaleString()}</p></div>
-
             <div class="order-details"><div><strong>Customer</strong><span>${o.name} (${o.phone})</span></div><div><strong>Address</strong><span>${o.address}</span></div>${o.notes?`<div><strong>Notes</strong><span>${o.notes}</span></div>`:''}<div><strong>Status</strong><span class="order-status ${o.status.toLowerCase()}">${o.status}</span></div></div>
-
             <div class="order-items"><div class="order-items-title">Items (Total: ₹${o.total})</div>${o.items.map(item=>`<div class="order-item"><span>${item.name} x ${item.quantity}</span><span>₹${Number(item.price)*item.quantity}</span></div>`).join('')}</div>
-
             <div class="order-actions"><button class="btn btn-secondary" onclick="updateOrderStatus(${o.id},'${o.status==='Completed'?'Pending':'Completed'}')">${o.status==='Completed'?'Mark Pending':'Mark Completed'}</button><button class="delete-btn" onclick="deleteAdminItem(${o.id})">Delete</button></div>
-
           </div>
-
         `).join('')}`;
-
         form.innerHTML = '';
-
         form.style.display = 'none';
-
         return;
-
       }
 
       form.style.display = '';
-
       const items = currentAdminTab === 'menu' ? data.menuItems : (data[currentAdminTab] || []);
-
       const label = currentAdminTab.charAt(0).toUpperCase()+currentAdminTab.slice(1);
-
       list.innerHTML = `<h3 style="margin-top:0;">${label} (${items.length})</h3>${items.length===0?'<p style="color:#666;">No items.</p>':items.map(item=>`
-
         <div class="admin-item">
-
           ${item.image?`<img src="${item.image}" alt="" onerror="this.src='https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=400'">`:''}
-
           <div class="admin-item-info"><h4>${item.name||item.title||'Item'}</h4><p>${item.description||item.excerpt||(item.price?`₹${item.price}`:'')}</p></div>
-
           <button class="delete-btn" onclick="deleteAdminItem(${item.id})">Delete</button>
-
         </div>
-
       `).join('')}`;
 
       // render form
-
       const formConfigs = {
-
         menu: ['name','category','price','description','image','tag'],
-
         packages: ['name','price','description','image'],
-
         chefs: ['name','description','image'],
-
         news: ['title','excerpt','date','image'],
-
         gallery: ['image']
-
       };
-
       const fields = formConfigs[currentAdminTab] || [];
-
       const fieldTypes = { price:'number', category:'select', tag:'select', date:'date', image:'file', description:'textarea', excerpt:'textarea', name:'text', title:'text' };
-
       const selectOptions = { category:['Pizza','Burger','Pasta','Salad','Dessert'], tag:['','New','Hot'] };
-
       form.innerHTML = `<h3 style="margin-top:0;">Add New ${currentAdminTab.slice(0,-1)}</h3><div class="form-grid">${fields.map(f=>`
-
         <div class="form-group">
-
           <label>${f.charAt(0).toUpperCase()+f.slice(1)}</label>
-
           ${fieldTypes[f]==='textarea'?`<textarea id="form-${f}" placeholder="${f}"></textarea>`:
-
             fieldTypes[f]==='select'?`<select id="form-${f}">${(selectOptions[f]||[]).map(opt=>`<option value="${opt}">${opt||'None'}</option>`).join('')}</select>`:
-
             fieldTypes[f]==='file'?`<input type="file" id="form-${f}" accept="image/*" onchange="previewImage(this)">`:
-
             `<input type="${fieldTypes[f]||'text'}" id="form-${f}" placeholder="${f}" autocomplete="off" autocorrect="off" autocapitalize="off">`}
-
         </div>
-
       `).join('')}</div><div id="image-preview" style="display:none; margin-bottom:20px; text-align:center;"><img id="preview-img" style="max-width:100%; max-height:200px; border-radius:10px;"></div><button class="btn btn-primary" onclick="addAdminItem()">Add Item</button>`;
-
     }
 
     // Cloudinary upload function
@@ -2706,7 +1681,7 @@
       const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`;
       const formData = new FormData();
       formData.append('file', file);
-      formData.append('upload_preset', 'student_system'); // You may need to set this in Cloudinary dashboard
+      formData.append('upload_preset', 'student_system');
       
       try {
         const response = await fetch(uploadUrl, {
@@ -2740,61 +1715,40 @@
     }
 
     async function addAdminItem() {
-
       const fields = { menu:['name','category','price','description','image','tag'], packages:['name','price','description','image'], chefs:['name','description','image'], news:['title','excerpt','date','image'], gallery:['image'] };
-
       const newItem = { id:Date.now() };
-
       let imageFile = null;
 
       (fields[currentAdminTab]||[]).forEach(f => {
-
         const el = document.getElementById(`form-${f}`);
-
         if (el) {
-
           if (el.type==='number') {
-
             newItem[f] = Number(el.value);
-
           } else if (el.type==='file') {
-
-            // Handle file upload for image fields
             if (el.files && el.files[0]) {
               imageFile = el.files[0];
             }
-
           } else {
-
-            // Get value using multiple methods to ensure mobile compatibility
-
             let value = '';
-
             if (el.value !== undefined && el.value !== null) {
-
               value = String(el.value).trim();
-
             } else if (el.textContent !== undefined && el.textContent !== null) {
-
               value = el.textContent.trim();
-
             }
-
             newItem[f] = value;
-
           }
-
         }
-
       });
 
       // Upload image to Cloudinary if file was selected
       if (imageFile) {
         try {
-          showToast('Uploading image...');
+          showToast('Uploading image to Cloudinary...');
           const imageUrl = await uploadToCloudinary(imageFile);
+          // Store the Cloudinary URL in the database
           newItem.image = imageUrl;
-          console.log('Image uploaded successfully:', imageUrl);
+          console.log('Image uploaded successfully to Cloudinary:', imageUrl);
+          showToast('Image uploaded successfully!');
         } catch (error) {
           showToast('Image upload failed. Please try again.');
           console.error('Upload error:', error);
@@ -2802,133 +1756,84 @@
         }
       }
 
-      // Debug logging for mobile troubleshooting
-
-      console.log('Adding item:', newItem);
-
-      
-
       // Validate that image field has a value for tabs that require images
-
       if (currentAdminTab === 'gallery' && !newItem.image) {
-
         showToast('Please select an image file');
-
         return;
-
       }
-
-      
 
       if (currentAdminTab === 'menu') {
-
         data.menuItems.push(newItem);
-
       } else {
-
         data[currentAdminTab].push(newItem);
-
       }
 
+      // Save to Firestore (and localStorage)
       saveData();
 
       renderAdminList();
-
       if (currentAdminTab==='menu') renderMenu('All');
-
       else if (currentAdminTab==='packages') renderPackages();
-
       else if (currentAdminTab==='chefs') renderChefs();
-
       else if (currentAdminTab==='news') renderNews();
-
       else if (currentAdminTab==='gallery') renderGallery();
+      showToast('Item added successfully with Cloudinary image!');
 
-      showToast('Item added.');
-
+      // Clear form fields
+      (fields[currentAdminTab]||[]).forEach(f => {
+        const el = document.getElementById(`form-${f}`);
+        if (el) {
+          if (el.type === 'file') {
+            el.value = '';
+            document.getElementById('image-preview').style.display = 'none';
+          } else {
+            el.value = '';
+          }
+        }
+      });
     }
-
-
 
     function showConfirm(msg, onConfirm) {
-
       const overlay = document.createElement('div');
-
       overlay.className = 'confirm-overlay';
-
       overlay.innerHTML = `<div class="confirm-box"><p>${msg}</p><div class="confirm-actions"><button class="btn btn-secondary cancel-btn">Cancel</button><button class="btn btn-primary confirm-btn">Delete</button></div></div>`;
-
       document.body.appendChild(overlay);
-
       overlay.querySelector('.cancel-btn').onclick = () => overlay.remove();
-
       overlay.querySelector('.confirm-btn').onclick = () => { overlay.remove(); onConfirm(); };
-
     }
-
-
 
     function deleteAdminItem(id) {
-
       showConfirm('Are you sure you want to delete this item?', () => {
-
         if (currentAdminTab==='orders') data.orders = data.orders.filter(o=>o.id!==id);
-
         else if (currentAdminTab==='menu') data.menuItems = data.menuItems.filter(i=>i.id!==id);
-
         else data[currentAdminTab] = data[currentAdminTab].filter(i=>i.id!==id);
-
         saveData();
-
         renderAdminList();
-
         if (currentAdminTab==='menu') renderMenu('All');
-
         else if (currentAdminTab==='packages') renderPackages();
-
         else if (currentAdminTab==='chefs') renderChefs();
-
         else if (currentAdminTab==='news') renderNews();
-
         else if (currentAdminTab==='gallery') renderGallery();
-
         showToast('Item deleted successfully.');
-
       });
-
     }
-
-
 
     function updateOrderStatus(id, status) {
-
       data.orders = data.orders.map(o => o.id===id ? {...o, status} : o);
-
       saveData();
-
       renderAdminList();
-
     }
-
-
 
     function deleteMessage(id) {
-
       showConfirm('Are you sure you want to delete this message?', () => {
-
         data.messages = (data.messages || []).filter(m=>m.id!==id);
-
         saveData();
-
         renderAdminList();
-
         showToast('Message deleted successfully.');
-
       });
-
     }
 
-  </script>
+</script>
 
 </body>
 
